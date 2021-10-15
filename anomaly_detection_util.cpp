@@ -48,8 +48,15 @@ float cov(float* x, float* y, int size) {
 
 // returns the Pearson correlation coefficient of X and Y
 float pearson(float* x, float* y, int size) {
-  return 0;
+  float covRes, varX, varY;
+
+  covRes = cov(x,y,size);
+  varX = var(x, size);
+  varY = var(y, size);
+
+  return covRes / (varX * varY);
 }
+
 class Line{
  public:
   float a,b;
