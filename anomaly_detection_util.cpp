@@ -54,11 +54,11 @@ float pearson(float* x, float* y, int size) {
   varX = var(x, size);
   varY = var(y, size);
 
-  return covRes / (varX * varY);
+  return covRes / sqrt(varX * varY);
 }
 
-class Line{
- public:
+class Line {
+public:
   float a,b;
   Line():a(0),b(0){}
   Line(float a, float b):a(a),b(b){}
