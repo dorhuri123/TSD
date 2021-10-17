@@ -5,23 +5,24 @@
 #include "anomaly_detection_util.h"
 #include <math.h>
 
+float avg(float* x, int size){
+  float res = 0;
+  for(int i = 0; i < size; i++){
+    res += x[i];
+  }
+
+  return res / size;
+}
+
 float var(float* x, int size) {
-  float temp = 0, ev = 0;
+  float res = 0, ev = 0;
 
-  // Calc the Expected value
+  ev = avg(x, size);
   for (int i=0; i< size; i++) {
-    temp += x[i];
+    res += x[i]*x[i];
   }
-  ev = (float)(1.0 / size) * temp;
-
-  // Calc the variance
-  temp = 0;
-  for (int i=0; i< size; i++) {
-    temp += pow(x[i] - ev, 2);
-  }
-  temp = (float)(1.0 / size) * temp;
-
-  return temp;
+  res = (res / size) - ev * ev;
+  return res;
 }
 
 // returns the covariance of X and Y
