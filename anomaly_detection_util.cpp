@@ -3,12 +3,12 @@
 //
 
 #include <math.h>
+#include "anomaly_detection_util.h"
 float avg(float* x, int size){
   float res = 0;
   for(int i = 0; i < size; i++){
     res += x[i];
   }
-
   return res / size;
 }
 
@@ -69,13 +69,18 @@ Line linear_reg(Point** points, int size) {
    Line line(xCoefficient,numCoefficient);
    return line;
 }
-
+float lineY(Line line,float x){
+    return (line.a*x) + line.b;
+}
 // returns the deviation between point p and the line equation of the points
 float dev(Point p,Point** points, int size) {
-  return 0;
+  Line line = linear_reg(points,size);
+  float pointLineY = lineY(line,p.x);
+  return abs(pointLineY - p.y);
 }
 
 // returns the deviation between point p and the line
 float dev(Point p,Line l) {
-  return 0;
+  float pointLineY = lineY(l,p.x);
+  return abs(pointLineY - p.y);
 }
