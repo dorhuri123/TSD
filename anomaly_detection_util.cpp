@@ -41,22 +41,6 @@ float pearson(float* x, float* y, int size) {
   return covRes / sqrt(varX * varY);
 }
 
-class Line {
-public:
-  float a,b;
-  Line():a(0),b(0){}
-  Line(float a, float b):a(a),b(b){}
-  float f(float x) {
-    return a*x+b;
-  }
-};
-
-class Point{
- public:
-  float x,y;
-  Point(float x, float y):x(x),y(y){}
-};
-
 // performs a linear regression and return s the line equation
 Line linear_reg(Point** points, int size) {
     float x [size], y [size];

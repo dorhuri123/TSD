@@ -2,9 +2,8 @@
 // Created by dor on 10/14/21.
 //
 
-#ifndef TSD__ANOMALY_DETECTION_UTIL_H_
-#define TSD__ANOMALY_DETECTION_UTIL_H_
-class anomaly_detection_util {
+#ifndef ANOMALY_DETECTION_UTIL_H_
+#define ANOMALY_DETECTION_UTIL_H_
 // returns the variance of X and Y
 float var(float* x, int size);
 // returns the covariance of X and Y
@@ -33,6 +32,5 @@ Line linear_reg(Point** points, int size);
 float dev(Point p,Point** points, int size);
 // returns the deviation between point p and the line
 float dev(Point p,Line l);
-};
 
-#endif //TSD__ANOMALY_DETECTION_UTIL_H_
+#endif ANOMALY_DETECTION_UTIL_H_
