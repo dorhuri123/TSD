@@ -48,7 +48,7 @@ Line linear_reg(Point** points, int size) {
         x[i] = points[i]->x;
         y[i] = points[i]->y;
     }
-  float xCoefficient = cov(x,y,size), avgX = avg(x,size), avgY = avg(y,size),
+  float xCoefficient = cov(x,y,size)/ var(x,size), avgX = avg(x,size), avgY = avg(y,size),
   numCoefficient = avgY -(xCoefficient * avgX);
    Line line(xCoefficient,numCoefficient);
    return line;
