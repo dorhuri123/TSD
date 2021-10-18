@@ -4,7 +4,6 @@
 
 #ifndef TSD__ANOMALY_DETECTION_UTIL_H_
 #define TSD__ANOMALY_DETECTION_UTIL_H_
-
 class anomaly_detection_util {
 // returns the variance of X and Y
 float var(float* x, int size);

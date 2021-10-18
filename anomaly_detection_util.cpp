@@ -2,9 +2,7 @@
 // Created by dor on 10/14/21.
 //
 
-#include "anomaly_detection_util.h"
 #include <math.h>
-
 float avg(float* x, int size){
   float res = 0;
   for(int i = 0; i < size; i++){
@@ -37,11 +35,9 @@ float cov(float* x, float* y, int size) {
 // returns the Pearson correlation coefficient of X and Y
 float pearson(float* x, float* y, int size) {
   float covRes, varX, varY;
-
   covRes = cov(x,y,size);
   varX = var(x, size);
   varY = var(y, size);
-
   return covRes / sqrt(varX * varY);
 }
 
@@ -63,8 +59,15 @@ class Point{
 
 // performs a linear regression and return s the line equation
 Line linear_reg(Point** points, int size) {
-  Line ln;
-  return ln;
+    float x [size], y [size];
+    for (int i = 0; i < size; ++i) {
+        x[i] = points[i]->x;
+        y[i] = points[i]->y;
+    }
+  float xCoefficient = cov(x,y,size), avgX = avg(x,size), avgY = avg(y,size),
+  numCoefficient = avgY -(xCoefficient * avgX);
+   Line line(xCoefficient,numCoefficient);
+   return line;
 }
 
 // returns the deviation between point p and the line equation of the points
