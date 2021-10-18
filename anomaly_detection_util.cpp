@@ -2,7 +2,7 @@
 // Created by dor on 10/14/21.
 //
 
-#include <math.h>
+#include <cmath>
 #include "anomaly_detection_util.h"
 float avg(float* x, int size){
   float res = 0;
@@ -60,13 +60,17 @@ float lineY(Line line,float x){
 float dev(Point p,Point** points, int size) {
   Line line = linear_reg(points,size);
   float pointLineY = lineY(line,p.x);
-  float res = abs(pointLineY - p.y);
-  return res;
+  float res = (pointLineY - p.y);
+  if(res >= 0)
+      return res;
+  return res*-1;
 }
 
 // returns the deviation between point p and the line
 float dev(Point p,Line l) {
   float pointLineY = lineY(l,p.x);
-  float res = abs(pointLineY - p.y);
-  return res;
+  float res = (pointLineY - p.y);
+  if(res >= 0)
+      return res;
+  return res*-1;
 }
