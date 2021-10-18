@@ -27,24 +27,11 @@ float var(float* x, int size) {
 
 // returns the covariance of X and Y
 float cov(float* x, float* y, int size) {
-  float e1 = 0, e2 = 0, e3 = 0;
-
-  for (int i=0; i< size; i++) {
-    e1 += (x[i] * y[i]);
-  }
-  e1 = (float)(1.0 / size) * e1;
-
-  for (int i=0; i< size; i++) {
-    e2 += (x[i]);
-  }
-  e3 = (float)(1.0 / size) * e2;
-
-  for (int i=0; i< size; i++) {
-    e3 += (y[i]);
-  }
-  e3 = (float)(1.0 / size) * e3;
-
-  return e1 - (e2 * e3);
+    float sum = 0,avgX = avg(x,size), avgY = avg(y,size);
+    for (int i=0; i < size; i++){
+        sum += (x[i]- avgX)*(y[i] - avgY);
+    }
+    return sum / size;
 }
 
 // returns the Pearson correlation coefficient of X and Y
