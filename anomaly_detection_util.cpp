@@ -71,7 +71,7 @@ public:
 class Point{
  public:
   float x,y;
-  Point(float x, float y):x(x),y(x){}
+  Point(float x, float y):x(x),y(y){}
 };
 
 // performs a linear regression and return s the line equation
