@@ -60,11 +60,13 @@ float lineY(Line line,float x){
 float dev(Point p,Point** points, int size) {
   Line line = linear_reg(points,size);
   float pointLineY = lineY(line,p.x);
-  return abs(pointLineY - p.y);
+  float res = abs(pointLineY - p.y);
+  return res;
 }
 
 // returns the deviation between point p and the line
 float dev(Point p,Line l) {
   float pointLineY = lineY(l,p.x);
-  return abs(pointLineY - p.y);
+  float res = abs(pointLineY - p.y);
+  return res;
 }
