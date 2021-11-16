@@ -70,7 +70,7 @@ public:
         return features;
     }
     /*
-     * function return map
+     * function return the map
      */
     map<string, vector<float>> getTable()const{
         return tableData;
