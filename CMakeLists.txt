@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(ex2)
 
 set(CMAKE_CXX_STANDARD 14)
+add_definitions(-D_GLIBCXX_USE_CX11_ABI=0)
 
 include_directories(.)
 
