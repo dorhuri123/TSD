@@ -1,8 +1,16 @@
 cmake_minimum_required(VERSION 3.20)
-project(TSD)
+project(ex2)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(TSD main.cpp anomaly_detection_util.cpp anomaly_detection_util.h)
+include_directories(.)
 
-add_executable(anomaly_detection_util anomaly_detection_util.cpp)
+add_executable(ex2
+        anomaly_detection_util.cpp
+        anomaly_detection_util.h
+        AnomalyDetector.h
+        MainTrain.cpp
+        SimpleAnomalyDetector.cpp
+        SimpleAnomalyDetector.h
+        timeseries.cpp
+        timeseries.h)
