@@ -1,3 +1,32 @@
+//
+// Created by dor on 10/14/21.
+//Dor Huri 209409218
+//Aviya Hadad 314802075
+//
+
+#ifndef AVIA1_TIMESERIES_H
+#define AVIA1_TIMESERIES_H
+
+#include <iostream>
+#include <string>
+#include <map>
+#include <vector>
+
+using namespace std;
+
+class TimeSeries {
+
+public:
+    map<string, vector<float>> tableData;
+};
+
+
+#endif //AVIA1_TIMESERIES_H
+
+
+*/
+
+
 
 
 #ifndef TIMESERIES_H_
@@ -21,7 +50,7 @@ public:
      * this constructor get a csv file and organize him as a table chart
      * where the first line of the file is the featured.
      */
-	TimeSeries(const char* CSVfileName){
+    TimeSeries(const char* CSVfileName){
         //taking file using fstream
         fstream file(CSVfileName);
         string line, key, value, fileContent;
@@ -56,7 +85,7 @@ public:
         }
         //closing file
         file.close();
-	}
+    }
     /*
      * function return the value of giving key
      */
@@ -74,6 +103,12 @@ public:
      */
     map<string, vector<float>> getTable()const{
         return tableData;
+    }
+    /*
+     * function return the size of rows.
+    */
+    int getRowSize() const{
+        return tableData.begin()->second.size();
     }
 };
 
