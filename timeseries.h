@@ -4,27 +4,9 @@
 //Aviya Hadad 314802075
 //
 
-#ifndef AVIA1_TIMESERIES_H
-#define AVIA1_TIMESERIES_H
-
-#include <iostream>
-#include <string>
-#include <map>
-#include <vector>
-
-using namespace std;
-
-class TimeSeries {
-
-public:
-    map<string, vector<float>> tableData;
-};
 
 
-#endif //AVIA1_TIMESERIES_H
 
-
-*/
 
 
 
@@ -105,10 +87,18 @@ public:
         return tableData;
     }
     /*
-     * function return the size of rows.
+     * function return the size of the vector.
+     * for array of points
     */
     int getRowSize() const{
         return tableData.begin()->second.size();
+    }
+    /*
+     * function return the number of vectors.
+     * we use going trow the map
+     */
+    int getColumnSize() const{
+        return features.size();
     }
 };
 

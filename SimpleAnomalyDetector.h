@@ -14,9 +14,13 @@
 #include "AnomalyDetector.h"
 
 struct correlatedFeatures{
+    //the vectors that are corrlation
     string feature1,feature2; // names of the correlated features
+    //the value of the corrlation
     float corrlation;
+    //the regression line of the vector
     Line lin_reg;
+    //threshold value
     float threshold;
 };
 

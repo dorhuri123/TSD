@@ -58,7 +58,7 @@ float pearson(float* x, float* y, int size) {
   varX = var(x, size);
   varY = var(y, size);
   //returning correlation coefficient of X and Y according to formula
-  return covRes / sqrt(varX * varY);
+  return covRes / (sqrt(varX) * sqrt(varY));
 }
 /*
  * the function get pointer to point pointer and his size and
