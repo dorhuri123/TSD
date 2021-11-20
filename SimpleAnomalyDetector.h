@@ -1,5 +1,4 @@
 //
-// Created by dor on 10/14/21.
 //Dor Huri 209409218
 //Aviya Hadad 314802075
 //
@@ -12,6 +11,7 @@
 #include "anomaly_detection_util.h"
 #include "timeseries.h"
 #include "AnomalyDetector.h"
+#include <algorithm>
 
 struct correlatedFeatures{
     //the vectors that are corrlation

@@ -1,12 +1,12 @@
 //
-// Created by dor on 10/14/21.
 //Dor Huri 209409218
 //Aviya Hadad 314802075
 //
 
-#include "string.h"
+#include <cmath>
 #include "timeseries.h"
 #include "SimpleAnomalyDetector.h"
+#include <algorithm>
 
 SimpleAnomalyDetector::SimpleAnomalyDetector() {
     this->threshold = 0.9;
@@ -14,7 +14,7 @@ SimpleAnomalyDetector::SimpleAnomalyDetector() {
 
 SimpleAnomalyDetector::~SimpleAnomalyDetector() {}
 
-void SimpleAnomalyDetector::learnNormal(const TimeSeries &ts) {
+void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts) {
     float temp, max = 0;
     string maxCorName;
     //going trow vector map for looping
@@ -28,7 +28,7 @@ void SimpleAnomalyDetector::learnNormal(const TimeSeries &ts) {
             vector<float> v1 = ts.getTable().find(ts.getFeatures().at(i))->second;
             vector<float> v2 = ts.getTable().find(ts.getFeatures().at(j))->second;
             //calculating the correlation between vectors
-            temp = abs(pearson(&(v1).at(0), &(v2).at(0), (int) ts.getTable().begin()->second.size()));
+            temp = fabs(pearson(&(v1).at(0), &(v2).at(0), (int) ts.getTable().begin()->second.size()));
             //checking if the current correlation is  more correlative than the last correlative value
             if (temp > max) {
                 //max get the highest correlation
@@ -80,7 +80,7 @@ vector<AnomalyReport> SimpleAnomalyDetector::detect(const TimeSeries &ts) {
     Point **newArrayOfPoints = new Point *[ts.getRowSize()];
     //creating vector of AnomalyReport
     vector <AnomalyReport> anomalReportVector;
-    for(int i=0; i<this->corrFeatures.size();i++) {
+    for(int i=0; i < this->corrFeatures.size();i++) {
         //take 2 vectors from struct
         vector<float> v1 = ts.getTable().find(this->corrFeatures.at(i).feature1)->second;
         vector<float> v2 = ts.getTable().find(this->corrFeatures.at(i).feature2)->second;
@@ -92,10 +92,11 @@ vector<AnomalyReport> SimpleAnomalyDetector::detect(const TimeSeries &ts) {
         //looping trow the array
         for(int t=0;t<ts.getRowSize();t++) {
             //checking if we have deviation according to the threshold
-            if(dev(*newArrayOfPoints[t], newArrayOfPoints, ts.getRowSize())>this->corrFeatures.at(i).threshold) {
-                //assigning name of vector
-                string descrip1=this->corrFeatures.at(i).feature1;
-                string descrip2=this->corrFeatures.at(i).feature2;
+            if(dev(*newArrayOfPoints[t], newArrayOfPoints, ts.getRowSize())> this->corrFeatures.at(i).threshold) {
+            //assigning name of vector
+                string descrip1 = this->corrFeatures.at(i).feature1;
+                string descrip2 = this->corrFeatures.at(i).feature2;
+
                 //creating instace of annomaly report
                 AnomalyReport *anomalyReport = new AnomalyReport(descrip1+"-"+descrip2,t+1);
                 //adding anomaly report to the vector
@@ -106,11 +107,7 @@ vector<AnomalyReport> SimpleAnomalyDetector::detect(const TimeSeries &ts) {
     //returning vector
     return anomalReportVector;
 }
-
 vector<correlatedFeatures> SimpleAnomalyDetector::getNormalModel() {
     //return the vector of struct corrfeatures(offline)
     return this->corrFeatures;
 }
-
-
-#include "SimpleAnomalyDetector.h"
