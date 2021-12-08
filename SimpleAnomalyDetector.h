@@ -20,14 +20,21 @@ struct correlatedFeatures{
     float corrlation;
     //the regression line of the vector
     Line lin_reg;
-    //threshold value
+    //topThreshold value.
     float threshold;
+    //the center of the circle.
+    Point center;
+    //the radius of the circle.
+    float radius;
+    //is it a circle.
+    bool isCircle = false;
 };
 
 
 class SimpleAnomalyDetector:public TimeSeriesAnomalyDetector{
 protected:
-    float threshold;
+    float topThreshold;
+    float bottomThreshold;
     // we want to save cf data and anomaly report.
     vector<correlatedFeatures> corrFeatures;
 public:

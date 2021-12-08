@@ -1,3 +1,4 @@
+
 //Dor Huri 209409218
 //Aviya Hadad 314802075
 #ifndef MINCIRCLE_H_
@@ -17,9 +18,9 @@ using namespace std;
 
 class Circle{
 public:
-	Point center;
-	float radius;
-	Circle(Point c,float r):center(c),radius(r){}
+    Point center;
+    float radius;
+    Circle(Point c,float r):center(c),radius(r){}
 };
 // --------------------------------------
 /*
@@ -41,7 +42,7 @@ bool inside_circle(Circle& c, Point p){
 * the function check if all points are valid for the gva circle
 */
 bool is_valid(Circle& c,vector<Point>& r){
-    //lopping trow point in r
+    //lopping through point in r
     for(const Point&p: r){
         //checking if point is not inside the circle
         if (!inside_circle(c,p)){
@@ -83,12 +84,12 @@ Circle circle_from_3points(Point a,Point b,Point c){
     x = (mid_point_BC.y -mid_p_slop_BC*mid_point_BC.x + mid_p_slop_AB*mid_point_AB.x - mid_point_AB.y)/
      mid_p_slop_AB -mid_p_slop_BC)
      */
-   float x =  (mid_point_BC.y -mid_p_slop_BC*mid_point_BC.x + mid_p_slop_AB*mid_point_AB.x - mid_point_AB.y)/
-           (mid_p_slop_AB -mid_p_slop_BC);
-   float y = mid_p_slop_AB*(x- mid_point_AB.x) + mid_point_AB.y;
-   Point center = Point(x,y);
-   //calculating the circle radius and returning min circle
-   float r = distance(center,a);
+    float x =  (mid_point_BC.y -mid_p_slop_BC*mid_point_BC.x + mid_p_slop_AB*mid_point_AB.x - mid_point_AB.y)/
+               (mid_p_slop_AB -mid_p_slop_BC);
+    float y = mid_p_slop_AB*(x- mid_point_AB.x) + mid_point_AB.y;
+    Point center = Point(x,y);
+    //calculating the circle radius and returning min circle
+    float r = distance(center,a);
     return Circle(center,r);
 }
 /*
