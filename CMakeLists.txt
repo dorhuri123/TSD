@@ -13,4 +13,4 @@ add_executable(ex2
         SimpleAnomalyDetector.cpp
         SimpleAnomalyDetector.h
         timeseries.cpp
-        timeseries.h minCircle.h)
+        timeseries.h minCircle.h HybridAnomalyDetector.cpp HybridAnomalyDetector.h)

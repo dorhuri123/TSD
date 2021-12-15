@@ -1,19 +1,32 @@
-//
-//Dor Huri 209409218
-//Aviya Hadad 314802075
-//
 
-#include <cmath>
-#include "SimpleAnomalyDetector.h"
-
-SimpleAnomalyDetector::SimpleAnomalyDetector() {
-    this->topThreshold = 0.9;
-    this->bottomThreshold=0.5;
+#include "HybridAnomalyDetector.h"
+//constructor
+HybridAnomalyDetector::HybridAnomalyDetector() {
+    // TODO Auto-generated constructor stub
+}
+HybridAnomalyDetector::~HybridAnomalyDetector() {
+    // TODO Auto-generated destructor stub
 }
 
-SimpleAnomalyDetector::~SimpleAnomalyDetector() {}
+//detect abnormal at the online stage and returning the vectore of the report
+void HybridAnomalyDetector::hybridAnomalyReport(vector <AnomalyReport> anomalReportVector,
+                                                correlatedFeatures corrFeatures,int size, vector <float> v1,vector <float> v2,Point **newArrayOfPoints) {
+//looping through the points of the correlative vector to check if a point is not in the circle
+    for(int i=0;i<size;i++){
+        if(inside_circle(*(new Circle(*(corrFeatures.center),corrFeatures.threshold)),*newArrayOfPoints[i])==false){
+            //taking description of the vectors name if we found point not in the circle
+            string descrip1 = corrFeatures.feature1;
+            string descrip2 = corrFeatures.feature2;
+            //initialize anomaly report struct and add the description and the time stamp
+            AnomalyReport *anomalyReport = new AnomalyReport(descrip1+"-"+descrip2,i+1);
+            //adding the struct to the report vector
+            anomalReportVector.push_back(*anomalyReport);
+        }
 
-void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts) {
+    }
+}
+
+void HybridAnomalyDetector::learnNormal(const TimeSeries &ts){
     float temp, max = 0;
     string maxCorName;
     //going through vector map for looping
@@ -72,14 +85,13 @@ void SimpleAnomalyDetector::learnNormal(const TimeSeries& ts) {
             this->corrFeatures.push_back(corrFeatures);
         }
         if((this->topThreshold>=max)&&(max>= this->bottomThreshold)){
-            //this->corrFeatures.push_back(addDataOfCircle(arrayOfPoints,ts.getRowSize(),corrFeatures));
+            this->corrFeatures.push_back(addDataOfCircle(arrayOfPoints,ts.getRowSize(),corrFeatures));
         }
         max=0;
     }
 }
 
-vector<AnomalyReport> SimpleAnomalyDetector::detect(const TimeSeries &ts) {
-    //we get the vector of the structs and check what columns are corr, and according to the data we check if
+vector<AnomalyReport> HybridAnomalyDetector::detect(const TimeSeries& ts){
     Point **newArrayOfPoints = new Point *[ts.getRowSize()];
     //creating vector of AnomalyReport
     vector <AnomalyReport> anomalReportVector;
@@ -95,7 +107,7 @@ vector<AnomalyReport> SimpleAnomalyDetector::detect(const TimeSeries &ts) {
         //at the online stage we check if the struct is of a kind circle
         if (corrFeatures.at(i).isCircle == true) {
             //send it to add report of a kind circle to the vector of the report
-            //hybridAnomalyReport(anomalReportVector, corrFeatures.at(i), ts.getRowSize(), newArrayOfPoints);
+            hybridAnomalyReport(anomalReportVector, corrFeatures.at(i), ts.getRowSize(),v1,v2, newArrayOfPoints);
         } else {
             //looping trow the array
             for (int t = 0; t < ts.getRowSize(); t++) {
@@ -114,11 +126,27 @@ vector<AnomalyReport> SimpleAnomalyDetector::detect(const TimeSeries &ts) {
             }
         }
 
-        //returning vector
-        return anomalReportVector;
     }
+    //returning vector
+    return anomalReportVector;
 }
-vector<correlatedFeatures> SimpleAnomalyDetector::getNormalModel() {
-    //return the vector of struct corrfeatures(offline)
-    return this->corrFeatures;
+
+//add Info about the correlation in case it a circle
+correlatedFeatures HybridAnomalyDetector::addDataOfCircle(Point **arrayOfPoints,int size,correlatedFeatures corrFeatures){
+    //create minimal circle according to the correlative vectors
+    Circle minCircle=findMinCircle(arrayOfPoints,size);
+    //add the radius of the minimal circle to the struct
+    corrFeatures.radius= minCircle.radius;
+    //same just with center
+    corrFeatures.center= &(minCircle.center);
+    //updating the indicator to know at the online if a struct is of circle or line
+    corrFeatures.isCircle= true;
+    corrFeatures.threshold = minCircle.radius*1.1;
+    //returning the struct we just now updated
+    return corrFeatures;
 }
+
+
+
+
+
