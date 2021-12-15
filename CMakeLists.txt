@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.16.3)
 project(ex2)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -13,4 +13,4 @@ add_executable(ex2
         SimpleAnomalyDetector.cpp
         SimpleAnomalyDetector.h
         timeseries.cpp
-        timeseries.h minCircle.h HybridAnomalyDetector.cpp HybridAnomalyDetector.h)
+        timeseries.h minCircle.cpp minCircle.h HybridAnomalyDetector.cpp HybridAnomalyDetector.h)
