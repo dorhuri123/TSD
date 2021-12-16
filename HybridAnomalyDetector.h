@@ -17,8 +17,7 @@ public:
 
     virtual correlatedFeatures addDataOfCircle(Point **arrayOfPoints, int size, correlatedFeatures corrFeatures);
 
-    virtual void hybridAnomalyReport(vector<AnomalyReport> anomalReportVector,
-                                     correlatedFeatures corrFeatures, int size, vector<float> v1, vector<float> v2,
+    virtual void hybridAnomalyReport(vector<AnomalyReport> anomalReportVector,correlatedFeatures *corrFeatures, int size, vector<float> v1, vector<float> v2,
                                      Point **newArrayOfPoints);
 };
 

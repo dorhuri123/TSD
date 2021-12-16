@@ -9,14 +9,14 @@ HybridAnomalyDetector::~HybridAnomalyDetector() {
 }
 
 //detect abnormal at the online stage and returning the vectore of the report
-void HybridAnomalyDetector::hybridAnomalyReport(vector <AnomalyReport> anomalReportVector,
-                                                correlatedFeatures corrFeatures,int size, vector <float> v1,vector <float> v2,Point **newArrayOfPoints) {
+void HybridAnomalyDetector::hybridAnomalyReport(vector <AnomalyReport> anomalReportVector, correlatedFeatures* corrFeatures ,
+                                                int size, vector <float> v1,vector <float> v2,Point **newArrayOfPoints) {
 //looping through the points of the correlative vector to check if a point is not in the circle
     for(int i=0;i<size;i++){
-        if(inside_circle(*(new Circle(*(corrFeatures.center),corrFeatures.threshold)),*newArrayOfPoints[i])==false){
+        if(inside_circle(*(new Circle(*(corrFeatures->center),corrFeatures->threshold)),*newArrayOfPoints[i])==false){
             //taking description of the vectors name if we found point not in the circle
-            string descrip1 = corrFeatures.feature1;
-            string descrip2 = corrFeatures.feature2;
+            string descrip1 = corrFeatures->feature1;
+            string descrip2 = corrFeatures->feature2;
             //initialize anomaly report struct and add the description and the time stamp
             AnomalyReport *anomalyReport = new AnomalyReport(descrip1+"-"+descrip2,i+1);
             //adding the struct to the report vector
@@ -107,7 +107,7 @@ vector<AnomalyReport> HybridAnomalyDetector::detect(const TimeSeries& ts){
         //at the online stage we check if the struct is of a kind circle
         if (corrFeatures.at(i).isCircle == true) {
             //send it to add report of a kind circle to the vector of the report
-            hybridAnomalyReport(anomalReportVector, corrFeatures.at(i), ts.getRowSize(),v1,v2, newArrayOfPoints);
+            hybridAnomalyReport(anomalReportVector,&(corrFeatures.at(i)), ts.getRowSize(),v1,v2, newArrayOfPoints);
         } else {
             //looping trow the array
             for (int t = 0; t < ts.getRowSize(); t++) {
