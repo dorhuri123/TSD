@@ -1,5 +1,4 @@
 //
-// Created by dor on 10/14/21.
 //Dor Huri 209409218
 //Aviya Hadad 314802075
 //
@@ -12,18 +11,23 @@
 
 using namespace std;
 
-class AnomalyReport{
+//report on anomaly
+class AnomalyReport {
 public:
     const string description;
     const long timeStep;
+
     AnomalyReport(string description, long timeStep) :
-            description(description),timeStep(timeStep){}
+            description(description), timeStep(timeStep) {}
 };
+
 class TimeSeriesAnomalyDetector {
 public:
-    virtual void learnNormal(const TimeSeries& ts)=0;
-    virtual vector<AnomalyReport> detect(const TimeSeries& ts)=0;
-    virtual ~TimeSeriesAnomalyDetector(){}
+    virtual void learnNormal(const TimeSeries &ts) = 0;
+
+    virtual vector <AnomalyReport> detect(const TimeSeries &ts) = 0;
+
+    virtual ~TimeSeriesAnomalyDetector() {}
 };
 
 #endif //AVIA1_ANOMALYDETECTOR_H

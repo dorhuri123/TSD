@@ -12,19 +12,20 @@
 #include "iostream"
 #include "fstream"
 #include "string.h"
+
 using namespace std;
 
-class TimeSeries{
+class TimeSeries {
     //map for the feature and his values
-    map<string, vector<float>> tableData;
+    map <string, vector<float>> tableData;
     //all the feature in vector
-    vector<string> features;
+    vector <string> features;
 public:
     /*
      * this constructor get a csv file and organize him as a table chart
      * where the first line of the file is the featured.
      */
-    TimeSeries(const char* CSVfileName){
+    TimeSeries(const char *CSVfileName) {
         //taking file using fstream
         fstream file(CSVfileName);
         string line, key, value, fileContent;
@@ -33,26 +34,26 @@ public:
         //string stream get the file content
         stringstream ss(fileContent);
         //line get the first line of file
-        getline(ss,line,'\n');
+        getline(ss, line, '\n');
         stringstream head(line);
         //striping line by comma
-        while(getline(head,key,',')){
+        while (getline(head, key, ',')) {
             //initialize empty vector
-            vector<float> initialize {};
+            vector<float> initialize{};
             //inserting to map the keys with empty vector
-            tableData.insert(pair<string, vector<float>>(key,initialize));
+            tableData.insert(pair < string, vector < float >> (key, initialize));
             //inserting feature to vector
             features.push_back(key);
         }
         //go throw file until last line
-        while (getline(ss,line,'\n')){
+        while (getline(ss, line, '\n')) {
             stringstream stringStream(line);
             //iterate over featured vector
-            for(const auto& i:features){
+            for (const auto &i:features) {
                 //it gets the value of key i
                 auto it = tableData.find(i);
                 //get the value in line
-                getline(stringStream,value,',');
+                getline(stringStream, value, ',');
                 //add value to vector
                 it->second.push_back(stof(value));
             }
@@ -60,40 +61,44 @@ public:
         //closing file
         file.close();
     }
+
     /*
      * function return the value of giving key
      */
-    vector<float> getData(string key)const{
+    vector<float> getData(string key) const {
         return tableData.at(key);
     }
+
     /*
      * function return the featured vector
      */
-    vector<string> getFeatures()const{
+    vector <string> getFeatures() const {
         return features;
     }
+
     /*
      * function return the map
      */
-    map<string, vector<float>> getTable()const{
+    map <string, vector<float>> getTable() const {
         return tableData;
     }
+
     /*
      * function return the size of the vector.
      * for array of points
     */
-    int getRowSize() const{
+    int getRowSize() const {
         return tableData.begin()->second.size();
     }
+
     /*
      * function return the number of vectors.
      * we use going trow the map
      */
-    int getColumnSize() const{
+    int getColumnSize() const {
         return features.size();
     }
 };
-
 
 
 #endif /* TIMESERIES_H_ */
