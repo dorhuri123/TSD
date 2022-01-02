@@ -9,6 +9,10 @@ HybridAnomalyDetector::HybridAnomalyDetector() {
     // TODO Auto-generated constructor stub
 }
 
+HybridAnomalyDetector::HybridAnomalyDetector(float threshold) {
+    this->topThresho=threshold;
+}
+
 HybridAnomalyDetector::~HybridAnomalyDetector() {
     // TODO Auto-generated destructor stub
 }

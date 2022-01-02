@@ -11,6 +11,7 @@ SimpleAnomalyDetector::SimpleAnomalyDetector() {
     this->bottomThreshold = 0.5;
 }
 
+
 SimpleAnomalyDetector::~SimpleAnomalyDetector() {}
 
 //identify if there is correlation and add struct to the vector
