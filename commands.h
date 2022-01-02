@@ -63,6 +63,7 @@ public:
     string get() {
         return this.name;
     }
+
 //reading the file and make it to a vector of string
     void uploading(vector <string> *someVector) {
         string word = this->dio->read();
@@ -70,16 +71,19 @@ public:
             *someVector.push_back(word);
             word = this->dio->read();
         }
-        this->dataClass.number=*someVector.size()-1;
+        //initializing the number(will be n) indicating number of lines minus the headline
+        this->dataClass.number = *someVector.size() - 1;
         //print message
         this->dio->write("Upload complete.");
     }
+
 //convert the vector of string to a real file
     void saveFile(vector <string> *someFile, string nameOfFile) {
         //enter name of the file and make file
         std::ofstream outFile(nameOfFile);
         for (const auto &e : someFile) outFile << e << "\n";
     }
+
 //the main function, calling the help function to uplaod and save the file
     void execute() {
         vector <string> trainFile;
@@ -105,6 +109,7 @@ public:
     string get() {
         return this.name;
     }
+
 //the main function
     void execute() {
         //default correalion
@@ -130,17 +135,17 @@ public:
         this->dataClass = dataClass;
     }
 
-    string get() {
+    String get() {
         return this.name;
     }
+
 //the main function
     void execute() {
         float defaultCorrelation = 0.9;
         //check if we have updat correalion from the user
-        if(this->dataClass.updatecorrelation!=0){
+        if (this->dataClass.updatecorrelation != 0) {
             HybridAnomalyDetection hybridAnomalyDetection(dataClass.updatecorrelation);
-        }
-        else{
+        } else {
             HybridAnomalyDetection hybridAnomalyDetection(defaultCorrelation);
         }
         //convert the file to timeseries and stariong the algo
@@ -198,11 +203,11 @@ public:
         //the ending of the time report sequence
         int timeStepAfter;
         //each pair has a begin and end of time step of the report of the user file
-        vector <pair<int,int>> fileOfTheClientConverted;
+        vector <pair<int, int>> fileOfTheClientConverted;
         //the vector with my results
         vector <AnomalyReport> vector;
         //each pair has a begin and end of time step of the report my file
-        vector< pair<int, int>> timeStep;
+        vector <pair<int, int>> timeStep;
         //number of sequence (size of the vector 'fileOfTheClientConverted')
         int P;
         //number of true positive
@@ -210,8 +215,8 @@ public:
         //number of false positive
         int FP;
         //number of lines of the file of the client
-        int n=this->dataClass.number;
-        int N=this->dataClass.number;
+        int n = this->dataClass.number;
+        int N = this->dataClass.number;
         //message
         this->dio->write("Please upload your local anomalies file.\n");
         //creat instance of class uploadfile
@@ -227,56 +232,58 @@ public:
             timeStepBefore = vector[i].timeStep;
             timeStepAfter = vector[i].timeStep;
             //need to fix the i so we wont miss element
-            while (i < vector.size() && vector[i].description == vector[i+1].description &&
-                   vector[i].timeStep == vector[i+1].timeStep - 1) {
+            while (i < vector.size() && vector[i].description == vector[i + 1].description &&
+                   vector[i].timeStep == vector[i + 1].timeStep - 1) {
                 timeStepAfter++;
                 i++;
             }
-                timeStepAfter++;
-                timeStep.push_back(std::make_pair(timeStepBefore,timeStepAfter));
+            timeStepAfter++;
+            timeStep.push_back(std::make_pair(timeStepBefore, timeStepAfter));
 
         }
 
 //convert string to int and add t new vector of pair of int(range of anormaly)
-for(int i=0;i<fileOfTheClient.size(),i++) {
-    fileOfTheClientConverted.push_back(std::make_pair(stoi(substr(0,fileOfTheClient[i].find(','))),
-                                                      stoi(substr(fileOfTheClient[i].find(',')+1))));
-//check the algorithm with the file of the client
-//choose the biggest vector to iterate
-for( auto const_iterator it = timeStep.begin() ; it != timeStep.end; it++){
-        bool indicator = false;
-        for (int i = 0; i < fileOfTheClientConverted.size(); i++) {
-
-        if (timeStep[i].first >= fileOfTheClientConverted[i].first)
-            if (timeStep[i].second <= fileOfTheClientConverted[i].second) {
-                indicator = true;
-            }
-        if (timeStep[i].first <= fileOfTheClientConverted[i].first)
-            if (timeStep[i].second >= fileOfTheClientConverted[i].second) {
-                indicator = true;
-            }
-    }
-        if (indicator == false)
-            FP++;
-        else {
-            TP++;
+        for (int i = 0; i < fileOfTheClient.size(), i++) {
+            fileOfTheClientConverted.push_back(std::make_pair(stoi(substr(0, fileOfTheClient[i].find(','))),
+                                                              stoi(substr(fileOfTheClient[i].find(',') + 1))));
         }
-    }
-P=fileOfTheClient.size();
+//check the algorithm with the file of the client
+        for (auto const_iterator it = timeStep.begin(); it != timeStep.end;
+        it++){
+            bool indicator = false;
+            for (int i = 0; i < fileOfTheClientConverted.size(); i++) {
+
+                if (timeStep[i].first >= fileOfTheClientConverted[i].first)
+                    if (timeStep[i].second <= fileOfTheClientConverted[i].second) {
+                        indicator = true;
+                    }
+                if (timeStep[i].first <= fileOfTheClientConverted[i].first)
+                    if (timeStep[i].second >= fileOfTheClientConverted[i].second) {
+                        indicator = true;
+                    }
+            }
+            if (indicator == false)
+                FP++;
+            else {
+                TP++;
+            }
+        }
+        P = fileOfTheClient.size();
 //claculating N, iterat over the vector of the client and decrease from N all he timestep with report
-for( fileOfTheClientConverted< pair<int, int>> timeStep;::const_iterator it = edges.begin() ; itt != edges.end; it++){
-    //minusing from N all the range with report
-    N=N-(fileOfTheClientConverted[i].second-fileOfTheClientConverted[i].first);
+        for (fileOfTheClientConverted <pair<int, int>> timeStep; ::const_iterator it = edges.begin(); itt != edges.end;
+        it++){
+            //minusing from N all the range with report
+            N = N - (fileOfTheClientConverted[i].second - fileOfTheClientConverted[i].first);
         }
 //message
         this->dio->write("Upload complete.\n");
         //print message with results
-    double result1= TP/P;
-    double result2= FP/N;
-    floorf(result1*1000)/1000;
-    floorf(result2*1000)/1000;
-        this->dio->write("True Positive Rate: "+result1+"\n");
-        this->dio->write("False Positive Rate: "+result2);
+        double result1 = TP / P;
+        double result2 = FP / N;
+        floorf(result1 * 1000) / 1000;
+        floorf(result2 * 1000) / 1000;
+        this->dio->write("True Positive Rate: " + result1 + "\n");
+        this->dio->write("False Positive Rate: " + result2);
 
     }
 };
@@ -289,8 +296,8 @@ public:
     vector <AnomalyReport> anomalReportVector;
 public:
     //the correlation
-    float updatedCorrelation=0;
-    int numberOfLines=0;
+    float updatedCorrelation = 0;
+    int numberOfLines = 0;
 
 
 };

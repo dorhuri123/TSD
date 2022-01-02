@@ -1,14 +1,14 @@
 /*
  * run2.cpp
  *
- *  Created on: 8       2019
+ *  Created on: 8 áãöî× 2019
  *      Author: Eli
  */
 
 #include <iostream>
 #include <fstream>
-#include "../CLI/commands.h"
-#include "../CLI/CLI.h"
+#include "commands.h"
+#include "CLI.h"
 
 using namespace std;
 
