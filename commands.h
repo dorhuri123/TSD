@@ -38,9 +38,11 @@ protected:
 protected:
     DataClass *dataClass;
 protected:
-    String name;
+    string name;
 public:
     Command(DefaultIO *dio) : dio(dio) {}
+
+    Command() {}
 
     virtual string get() = 0;
 
@@ -54,25 +56,25 @@ public:
 class UploadFile : public Command {
 
 public:
-    UploadFile(DefaultIO *dio, String name, DataClass *dataClass) {
+    UploadFile(DefaultIO *dio, string name, DataClass *dataClass) {
         Command(dio);
-        this.name = name;
+        this->name = name;
         this->dataClass = dataClass;
     }
 
     string get() {
-        return this.name;
+        return this->name;
     }
 
 //reading the file and make it to a vector of string
     void uploading(vector <string> *someVector) {
         string word = this->dio->read();
         while (word != "done") {
-            *someVector.push_back(word);
+            someVector->push_back(word);
             word = this->dio->read();
         }
         //initializing the number(will be n) indicating number of lines minus the headline
-        this->dataClass.number = *someVector.size() - 1;
+        this->dataClass.number = someVector->size() - 1;
         //print message
         this->dio->write("Upload complete.");
     }
@@ -81,7 +83,7 @@ public:
     void saveFile(vector <string> *someFile, string nameOfFile) {
         //enter name of the file and make file
         std::ofstream outFile(nameOfFile);
-        for (const auto &e : someFile) outFile << e << "\n";
+        for (const auto &e : *someFile) outFile << e << "\n";
     }
 
 //the main function, calling the help function to uplaod and save the file
@@ -100,14 +102,14 @@ public:
 //another class 2-choose correaltion for the algorithm
 class Correlation : public Command {
 public:
-    Correlation(DefaultIO *dio, String name, DataClass *dataClass) {
+    Correlation(DefaultIO *dio, string name, DataClass *dataClass) {
         Command(dio);
-        this.name = name;
+        this->name = name;
         this->dataClass = dataClass;
     }
 
     string get() {
-        return this.name;
+        return this->name;
     }
 
 //the main function
@@ -129,13 +131,13 @@ public:
 //another class 3-the hybrid anomaly detection algorithm,here we run and detect abnormaly
 class AnomalyAlgo : public Command {
 public:
-    AnomalyAlgo(DefaultIO *dio, String name, DataClass *dataClass) {
+    AnomalyAlgo(DefaultIO *dio, string name, DataClass *dataClass) {
         Command(dio);
-        this.name = name;
+        this->name = name;
         this->dataClass = dataClass;
     }
 
-    String get() {
+    string get() {
         return this.name;
     }
 
