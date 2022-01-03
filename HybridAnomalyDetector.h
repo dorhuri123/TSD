@@ -27,6 +27,7 @@ public:
     virtual void hybridAnomalyReport(vector <AnomalyReport> &anomalReportVector, int index, int size, vector<float> v1,
                                      vector<float> v2,
                                      Point **newArrayOfPoints);
+    HybridAnomalyDetector(float threshold);
+    void setCorllation(float corllation);
 };
-
 #endif /* HYBRIDANOMALYDETECTOR_H_ */

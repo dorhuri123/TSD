@@ -10,7 +10,7 @@ HybridAnomalyDetector::HybridAnomalyDetector() {
 }
 
 HybridAnomalyDetector::HybridAnomalyDetector(float threshold) {
-    this->topThresho=threshold;
+    this->topThreshold=threshold;
 }
 
 HybridAnomalyDetector::~HybridAnomalyDetector() {
@@ -38,7 +38,9 @@ void HybridAnomalyDetector::hybridAnomalyReport(vector <AnomalyReport> &anomalRe
         }
     }
 }
-
+void HybridAnomalyDetector::setCorllation(float corllation){
+    this->topThreshold = corllation;
+}
 //identify according to the threshold if it really correlative and if so sort it
 // to be circle or line (if it a circle add data to the struct) and update the vector
 void HybridAnomalyDetector::apply(float corr, const correlatedFeatures &cf, Point **points, int size) {

@@ -12,6 +12,19 @@
 
 
 using namespace std;
+//data class- it's a shared class between all the other class in order to share data,
+// the class it's in a field of any other class
+class DataClass {
+public:
+    //the results of the algorithem
+    vector <AnomalyReport> anomalReportVector;
+public:
+    //the correlation
+    float updatedCorrelation = 0;
+    int numberOfLines = 0;
+
+
+};
 
 class DefaultIO {
 public:
@@ -56,8 +69,7 @@ public:
 class UploadFile : public Command {
 
 public:
-    UploadFile(DefaultIO *dio, string name, DataClass *dataClass) {
-        Command(dio);
+    UploadFile(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
         this->name = name;
         this->dataClass = dataClass;
     }
@@ -74,7 +86,7 @@ public:
             word = this->dio->read();
         }
         //initializing the number(will be n) indicating number of lines minus the headline
-        this->dataClass.number = someVector->size() - 1;
+        this->dataClass->numberOfLines = someVector->size() - 1;
         //print message
         this->dio->write("Upload complete.");
     }
@@ -102,8 +114,7 @@ public:
 //another class 2-choose correaltion for the algorithm
 class Correlation : public Command {
 public:
-    Correlation(DefaultIO *dio, string name, DataClass *dataClass) {
-        Command(dio);
+    Correlation(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
         this->name = name;
         this->dataClass = dataClass;
     }
@@ -114,16 +125,16 @@ public:
 
 //the main function
     void execute() {
-        //default correalion
+        //default correlation
         float updatedCorrelation = 0;
         this->dio->write("The current correlation threshold is 0.9\n");
-        this->dio->read(updatedCorrelation);
+        this->dio->read(&updatedCorrelation);
         while ((updatedCorrelation < 0) || (updatedCorrelation > 1)) {
             this->dio->write("please choose a value between 0 and 1.\n");
-            this->dio->read(updatedCorrelation);
+            this->dio->read(&updatedCorrelation);
         }
         //saving the correlation
-        this->dataClass.updateCorrelation = updatedCorrelation;
+        this->dataClass->updatedCorrelation = updatedCorrelation;
 
     }
 };
@@ -131,29 +142,28 @@ public:
 //another class 3-the hybrid anomaly detection algorithm,here we run and detect abnormaly
 class AnomalyAlgo : public Command {
 public:
-    AnomalyAlgo(DefaultIO *dio, string name, DataClass *dataClass) {
-        Command(dio);
+    AnomalyAlgo(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
+
         this->name = name;
         this->dataClass = dataClass;
     }
 
     string get() {
-        return this.name;
+        return this->name;
     }
 
 //the main function
     void execute() {
         float defaultCorrelation = 0.9;
+        HybridAnomalyDetector hybridAnomalyDetection(defaultCorrelation);
         //check if we have updat correalion from the user
-        if (this->dataClass.updatecorrelation != 0) {
-            HybridAnomalyDetection hybridAnomalyDetection(dataClass.updatecorrelation);
-        } else {
-            HybridAnomalyDetection hybridAnomalyDetection(defaultCorrelation);
+        if (this->dataClass->updatedCorrelation != 0) {
+             hybridAnomalyDetection.setCorllation(dataClass->updatedCorrelation);
         }
         //convert the file to timeseries and stariong the algo
         hybridAnomalyDetection.learnNormal(TimeSeries("anomalyTrain"));
         //continue the algo and save the vector with the results to the new class
-        this->dataClass.anomalReport = hybridAnomalyDetection.detect(TimeSeries("anomalyTest"));
+        this->dataClass->anomalReportVector = hybridAnomalyDetection.detect(TimeSeries("anomalyTest"));
         //message printed
         this->dio->write("complete detection anomaly.\n");
     }
@@ -162,22 +172,21 @@ public:
 //another class 4-print the results to the user
 class PrintAnomalyReport : public Command {
 public:
-    PrintAnomalyReport(DefaultIO *dio, String name, DataClass *dataClass) {
-        Command(dio);
-        this.name = name;
+    PrintAnomalyReport(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
+        this->name = name;
         this->dataClass = dataClass;
     }
 
     string get() {
-        return this.name;
+        return this->name;
     }
 
     void execute() {
         //print from dataclass
-        for (int i = 0; i < this->dataClass.anomalReport.size(); i++) {
-            this->dio->write(this->dataClass.anomalReport[i].timeStep);
+        for (int i = 0; i < this->dataClass->anomalReportVector.size(); i++) {
+            this->dio->write(this->dataClass->anomalReportVector[i].timeStep);
             this->dio->write("  ");
-            this->dio->write(this->dataClass.anomalReport[i].description);
+            this->dio->write(this->dataClass->anomalReportVector[i].description);
             this->dio->write("\n");
         }
         this->dio->write("Done.");
@@ -187,14 +196,13 @@ public:
 //another class 5-compar my results vs the user file results and print the differnces/similarites
 class AnalysisAnomaly : public Command {
 public:
-    AnalysisAnomaly(DefaultIO *dio, String name, DataClass *dataClass) {
-        Command(dio);
-        this.name = name;
+    AnalysisAnomaly(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
+        this->name = name;
         this->dataClass;
     }
 
     string get() {
-        return this.name;
+        return this->name;
     }
 
 //the main function
@@ -207,7 +215,7 @@ public:
         //each pair has a begin and end of time step of the report of the user file
         vector <pair<int, int>> fileOfTheClientConverted;
         //the vector with my results
-        vector <AnomalyReport> vector;
+        vector <AnomalyReport> anomalyReport;
         //each pair has a begin and end of time step of the report my file
         vector <pair<int, int>> timeStep;
         //number of sequence (size of the vector 'fileOfTheClientConverted')
@@ -217,25 +225,25 @@ public:
         //number of false positive
         int FP;
         //number of lines of the file of the client
-        int n = this->dataClass.number;
-        int N = this->dataClass.number;
+        int n = this->dataClass->numberOfLines;
+        int N = this->dataClass->numberOfLines;
         //message
         this->dio->write("Please upload your local anomalies file.\n");
         //creat instance of class uploadfile
-        UploadFile anomalyReportByTheClient;
+        UploadFile anomalyReportByTheClient(this->dio,this->name,this->dataClass);
         //uploading the file of the user
         anomalyReportByTheClient.uploading(&fileOfTheClient);
-        //for convenience i copy the vector to another
-        vector = this->dataClass.anomalReport;
+        //for convenience i copy the vector to ano)ther
+        anomalyReport = this->dataClass->anomalReportVector;
 
 //checking sequence of report and initilaize the vector to be pairs of int of time step
-        for (int i = 0; i < vector.size(); i++) {
+        for (int i = 0; i < anomalyReport.size(); i++) {
             int k = 0;
-            timeStepBefore = vector[i].timeStep;
-            timeStepAfter = vector[i].timeStep;
+            timeStepBefore = anomalyReport[i].timeStep;
+            timeStepAfter = anomalyReport[i].timeStep;
             //need to fix the i so we wont miss element
-            while (i < vector.size() && vector[i].description == vector[i + 1].description &&
-                   vector[i].timeStep == vector[i + 1].timeStep - 1) {
+            while (i < anomalyReport.size() && anomalyReport[i].description == anomalyReport[i + 1].description &&
+                    anomalyReport[i].timeStep == anomalyReport[i + 1].timeStep - 1) {
                 timeStepAfter++;
                 i++;
             }
@@ -245,13 +253,12 @@ public:
         }
 
 //convert string to int and add t new vector of pair of int(range of anormaly)
-        for (int i = 0; i < fileOfTheClient.size(), i++) {
-            fileOfTheClientConverted.push_back(std::make_pair(stoi(substr(0, fileOfTheClient[i].find(','))),
-                                                              stoi(substr(fileOfTheClient[i].find(',') + 1))));
+        for (int i = 0; i < fileOfTheClient.size(); i++) {
+            fileOfTheClientConverted.push_back(std::make_pair(stoi(fileOfTheClient[i].substr(0, fileOfTheClient[i].find(','))),
+                                                              stoi(fileOfTheClient[i].substr(fileOfTheClient[i].find(',') + 1))));
         }
 //check the algorithm with the file of the client
-        for (auto const_iterator it = timeStep.begin(); it != timeStep.end;
-        it++){
+        for (auto it = timeStep.begin(); it != timeStep.end(); it++){
             bool indicator = false;
             for (int i = 0; i < fileOfTheClientConverted.size(); i++) {
 
@@ -272,10 +279,9 @@ public:
         }
         P = fileOfTheClient.size();
 //claculating N, iterat over the vector of the client and decrease from N all he timestep with report
-        for (fileOfTheClientConverted <pair<int, int>> timeStep; ::const_iterator it = edges.begin(); itt != edges.end;
-        it++){
+        for (vector <pair<int,int>>::const_iterator it = fileOfTheClientConverted.begin(); it != fileOfTheClientConverted.end(); it++){
             //minusing from N all the range with report
-            N = N - (fileOfTheClientConverted[i].second - fileOfTheClientConverted[i].first);
+            N = N - (it->second - it->first);
         }
 //message
         this->dio->write("Upload complete.\n");
@@ -284,25 +290,11 @@ public:
         double result2 = FP / N;
         floorf(result1 * 1000) / 1000;
         floorf(result2 * 1000) / 1000;
-        this->dio->write("True Positive Rate: " + result1 + "\n");
-        this->dio->write("False Positive Rate: " + result2);
-
+        this->dio->write("True Positive Rate: " + to_string(result1) + "\n");
+        this->dio->write("False Positive Rate: " + to_string(result2));
     }
 };
 
-//data class- its a shared class between all the other class in order to shar data,
-// the class its in a field of any other class
-class DataClass {
-public:
-    //the results of the algorithem
-    vector <AnomalyReport> anomalReportVector;
-public:
-    //the correlation
-    float updatedCorrelation = 0;
-    int numberOfLines = 0;
-
-
-};
 
 
 #endif /* COMMANDS_H_ */
