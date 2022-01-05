@@ -7,12 +7,12 @@ CLI::CLI(DefaultIO *dio) {
 
 //print the "menu" to the client (the classes)
 void CLI::print(Command** arrayOfCommands) {
-    this->dio->write("Welcome to the Anomaly Detection Server.\r\n");
-    this->dio->write("Please choose an option:\r\n");
+    this->dio->write("Welcome to the Anomaly Detection Server.\n");
+    this->dio->write("Please choose an option:\n");
     for (int i = 0; i < 5; i++) {
         this->dio->write(arrayOfCommands[i]->get());
     }
-    this->dio->write("6.exit\r\n");
+    this->dio->write("6.exit\n");
 }
 
 //creat and initalize the classes in array and the user choose from menu
@@ -20,17 +20,11 @@ void CLI::start() {
     float choiceOfUser = 0;
     Command* arrayOfCommands[5];
     DataClass dataClass;
-    UploadFile uploadFile(this->dio, "1.upload a time series csv file\r\n", &dataClass);
-    Correlation correlation(this->dio, "2.algorithm settings\r\n",&dataClass);
-    AnomalyAlgo anomalyAlgo(this->dio, "3.detect anomalies\r\n",&dataClass);
-    PrintAnomalyReport printAnomalyReport(this->dio, "4.display results\r\n",&dataClass);
-    AnalysisAnomaly analysisAnomaly(this->dio, "5.upload anomalies and analyze results\r\n",&dataClass);
-//    arrayOfCommands.push_back(&uploadFile);
-//    arrayOfCommands.push_back(&correlation);
-//    arrayOfCommands.push_back(&anomalyAlgo);
-//    arrayOfCommands.push_back(&printAnomalyReport);
-//    arrayOfCommands.push_back(&analysisAnomaly);
-   // print(arrayOfCommands);
+    UploadFile uploadFile(this->dio, "1.upload a time series csv file\n", &dataClass);
+    Correlation correlation(this->dio, "2.algorithm settings\n",&dataClass);
+    AnomalyAlgo anomalyAlgo(this->dio, "3.detect anomalies\n",&dataClass);
+    PrintAnomalyReport printAnomalyReport(this->dio, "4.display results\n",&dataClass);
+    AnalysisAnomaly analysisAnomaly(this->dio, "5.upload anomalies and analyze results\n",&dataClass);
     arrayOfCommands[0] = &uploadFile;
     arrayOfCommands[1] = &correlation;
     arrayOfCommands[2] = &anomalyAlgo;
