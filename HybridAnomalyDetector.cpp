@@ -1,91 +1,40 @@
-//
-//Dor Huri 209409218
-//Aviya Hadad 314802075
-//
+
 #include "HybridAnomalyDetector.h"
 
-//constructor
 HybridAnomalyDetector::HybridAnomalyDetector() {
     // TODO Auto-generated constructor stub
+
 }
 
 HybridAnomalyDetector::HybridAnomalyDetector(float threshold) {
-    this->topThreshold=threshold;
+    this->threshold = threshold;
+}
+
+void HybridAnomalyDetector::setCorllation(float x){
+  this->threshold = x;
 }
 
 HybridAnomalyDetector::~HybridAnomalyDetector() {
     // TODO Auto-generated destructor stub
 }
 
-//detect abnormal for circle struct at the online stage and update and return the vector of the anomalyreport
-void HybridAnomalyDetector::hybridAnomalyReport(vector <AnomalyReport> &anomalReportVector, int index,
-                                                int size, vector<float> v1, vector<float> v2,
-                                                Point **newArrayOfPoints) {
-//looping through the points of the correlative vector to check if a point is not in the circle
-    //Circle circle= new Circle(corrFeatures[i].center,corrFeatures[i].threshold);
-    for (int t = 0; t < size; t++) {
-        //checking if we have deviation according to the topThreshold
-        float dist = distance(corrFeatures[index].center, (*newArrayOfPoints[t]));
-        if (dist > corrFeatures[index].threshold) {
-            //assigning name of vector
-            string descrip1 = corrFeatures[index].feature1;
-            string descrip2 = corrFeatures[index].feature2;
 
-            //creating instace of annomaly report
-            AnomalyReport *anomalyReport = new AnomalyReport(descrip1 + "-" + descrip2, (t + 1));
-            //adding anomaly report to the vector
-            anomalReportVector.push_back(*anomalyReport);
-        }
-    }
-}
-void HybridAnomalyDetector::setCorllation(float corllation){
-    this->topThreshold = corllation;
-}
-//identify according to the threshold if it really correlative and if so sort it
-// to be circle or line (if it a circle add data to the struct) and update the vector
-void HybridAnomalyDetector::apply(float corr, const correlatedFeatures &cf, Point **points, int size) {
-    if (corr >= this->topThreshold) {
-        //adding struct to vector
-        this->corrFeatures.push_back(cf);
-    }
-    //add data and add the sruct to the vector of structs corrfeatures
-    if ((this->topThreshold > corr) && (corr >= this->bottomThreshold)) {
-        this->corrFeatures.push_back(addDataOfCircle(points, size, cf));
+void HybridAnomalyDetector::learnHelper(const TimeSeries& ts,float p/*pearson*/,string f1, string f2,Point** ps){
+    SimpleAnomalyDetector::learnHelper(ts,p,f1,f2,ps);
+    if(p>0.5 && p<threshold){
+        Circle cl = findMinCircle(ps,ts.getRowSize());
+        correlatedFeatures c;
+        c.feature1=f1;
+        c.feature2=f2;
+        c.corrlation=p;
+        c.threshold=cl.radius*1.1; // 10% increase
+        c.cx=cl.center.x;
+        c.cy=cl.center.y;
+        cf.push_back(c);
     }
 }
 
-//add Info about the correlation in case it a circle
-correlatedFeatures
-HybridAnomalyDetector::addDataOfCircle(Point **arrayOfPoints, int size, correlatedFeatures corrFeatures) {
-    //create minimal circle according to the correlative vectors
-    Circle minCircle = findMinCircle(arrayOfPoints, size);
-    //add the radius of the minimal circle to the struct
-    corrFeatures.radius = minCircle.radius;
-    //same just with center
-    corrFeatures.center = (minCircle.center);
-    //updating the indicator to know at the online if a struct is of circle or line
-    corrFeatures.isCircle = true;
-    corrFeatures.threshold = minCircle.radius * 1.1;
-    //returning the struct we just now updated
-    return corrFeatures;
+bool HybridAnomalyDetector::isAnomalous(float x,float y,correlatedFeatures c){
+    return (c.corrlation>=threshold && SimpleAnomalyDetector::isAnomalous(x,y,c)) ||
+           (c.corrlation>0.5 && c.corrlation<threshold && distance(Point(c.cx,c.cy),Point(x,y))>c.threshold);
 }
-
-//we know we have correlation and here we indetify if the struct is a circle or line to send it for check if
-//there is anormaly in the relevant function
-void HybridAnomalyDetector::addReport(vector <AnomalyReport> &anomalReportVector, int index, int size, vector<float> v1,
-                                      vector<float> v2, Point **newArrayOfPoints) {
-    //at the online stage we check if the struct is of a kind circle
-    if (corrFeatures.at(index).isCircle == true) {
-        //send it to maybe add report of a kind circle to the vector of the report
-        hybridAnomalyReport(anomalReportVector, index, size, v1, v2, newArrayOfPoints);
-    } else
-        //sent it to maybe add report of a kind line to the vector of the report
-    {
-        simpleAnomalyReport(anomalReportVector, index, size, v1, v2, newArrayOfPoints);
-    }
-}
-
-
-
-
-

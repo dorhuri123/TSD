@@ -1,104 +1,156 @@
-//
-//Dor Huri 209409218
-//Aviya Hadad 314802075
-//
+/*
+ * timeseries.h
+ *
+ *  Created on: 26 באוק׳ 2020
+ *      Author: Eli
+ */
 
 #ifndef TIMESERIES_H_
 #define TIMESERIES_H_
-
-#include <sstream>
-#include "vector"
-#include "map"
-#include "iostream"
-#include "fstream"
-#include "string.h"
+#include <iostream>
+#include <string.h>
+#include <fstream>
+#include<map>
+#include <vector>
+#include <string.h>
+#include <bits/stdc++.h>
+#include <algorithm>
 
 using namespace std;
 
-class TimeSeries {
-    //map for the feature and his values
-    map <string, vector<float>> tableData;
-    //all the feature in vector
-    vector <string> features;
+class TimeSeries{
+
+
+    map<string,vector<float>> ts;
+    vector<string> atts;
+    size_t dataRowSize;
 public:
-    /*
-     * this constructor get a csv file and organize him as a table chart
-     * where the first line of the file is the featured.
-     */
-    TimeSeries(const char *CSVfileName) {
-        //taking file using fstream
-        fstream file(CSVfileName);
-        string line, key, value, fileContent;
-        //getting all the file content to string using iterator
-        fileContent.assign((istreambuf_iterator<char>(file)), (istreambuf_iterator<char>()));
-        //string stream get the file content
-        stringstream ss(fileContent);
-        //line get the first line of file
-        getline(ss, line, '\n');
-        stringstream head(line);
-        //striping line by comma
-        while (getline(head, key, ',')) {
-            //initialize empty vector
-            vector<float> initialize{};
-            //inserting to map the keys with empty vector
-            tableData.insert(pair < string, vector < float >> (key, initialize));
-            //inserting feature to vector
-            features.push_back(key);
+
+
+    TimeSeries(const char* CSVfileName){
+        ifstream in(CSVfileName);
+        string head;
+        in>>head;
+        string att;
+        stringstream hss(head);
+        while(getline(hss,att,',')){
+            vector<float> v;
+            ts[att]=v;
+            atts.push_back(att);
         }
-        //go throw file until last line
-        while (getline(ss, line, '\n')) {
-            stringstream stringStream(line);
-            //iterate over featured vector
-            for (const auto &i:features) {
-                //it gets the value of key i
-                auto it = tableData.find(i);
-                //get the value in line
-                getline(stringStream, value, ',');
-                //add value to vector
-                it->second.push_back(stof(value));
+
+        while(!in.eof()){
+            string line;
+            in>>line;
+            string val;
+            stringstream lss(line);
+            int i=0;
+            while(getline(lss,val,',')){
+                ts[atts[i]].push_back(stof(val));
+                i++;
             }
         }
-        //closing file
-        file.close();
+        in.close();
+
+        dataRowSize = ts[atts[0]].size();
+
     }
 
-    /*
-     * function return the value of giving key
-     */
-    vector<float> getData(string key) const {
-        return tableData.at(key);
+    const vector<float>& getAttributeData(string name)const{
+        return ts.at(name);
     }
 
-    /*
-     * function return the featured vector
-     */
-    vector <string> getFeatures() const {
-        return features;
+    const vector<string>& gettAttributes()const{
+        return atts;
     }
 
-    /*
-     * function return the map
-     */
-    map <string, vector<float>> getTable() const {
-        return tableData;
+    size_t getRowSize()const{
+        return dataRowSize;
     }
 
-    /*
-     * function return the size of the vector.
-     * for array of points
-    */
-    int getRowSize() const {
-        return tableData.begin()->second.size();
-    }
+    ~TimeSeries(){
 
-    /*
-     * function return the number of vectors.
-     * we use going trow the map
-     */
-    int getColumnSize() const {
-        return features.size();
     }
 };
+
+
+
+#endif /* TIMESERIES_H_ */
+/*
+ * timeseries.h
+ *
+ *  Created on: 26 באוק׳ 2020
+ *      Author: Eli
+ */
+
+#ifndef TIMESERIES_H_
+#define TIMESERIES_H_
+#include <iostream>
+#include <string.h>
+#include <fstream>
+#include<map>
+#include <vector>
+#include <string.h>
+#include <bits/stdc++.h>
+#include <algorithm>
+
+using namespace std;
+
+class TimeSeries{
+
+
+	map<string,vector<float>> ts;
+	vector<string> atts;
+	size_t dataRowSize;
+public:
+
+
+	TimeSeries(const char* CSVfileName){
+		ifstream in(CSVfileName);
+		string head;
+		in>>head;
+		string att;
+		stringstream hss(head);
+		while(getline(hss,att,',')){
+			vector<float> v;
+		     ts[att]=v;
+		     atts.push_back(att);
+		}
+
+		while(!in.eof()){
+			string line;
+			in>>line;
+			string val;
+			stringstream lss(line);
+			int i=0;
+			while(getline(lss,val,',')){
+				ts[atts[i]].push_back(stof(val));
+			     i++;
+			}
+		}
+		in.close();
+
+		dataRowSize = ts[atts[0]].size();
+
+	}
+
+	const vector<float>& getAttributeData(string name)const{
+		return ts.at(name);
+	}
+
+	const vector<string>& gettAttributes()const{
+		return atts;
+	}
+
+	size_t getRowSize()const{
+		return dataRowSize;
+	}
+
+	~TimeSeries(){
+
+	}
+};
+
 
 
 #endif /* TIMESERIES_H_ */

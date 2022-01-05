@@ -17,13 +17,10 @@ using namespace std;
 class DataClass {
 public:
     //the results of the algorithem
-    vector <AnomalyReport> anomalReportVector;
-public:
+    vector<AnomalyReport> anomalReportVector;
     //the correlation
     float updatedCorrelation = 0;
-    int numberOfLines = 0;
-
-
+    int numberOfLines;
 };
 
 class DefaultIO {
@@ -48,9 +45,7 @@ public:
 class Command {
 protected:
     DefaultIO *dio;
-protected:
     DataClass *dataClass;
-protected:
     string name;
 public:
     Command(DefaultIO *dio) : dio(dio) {}
@@ -69,7 +64,7 @@ public:
 class UploadFile : public Command {
 
 public:
-    UploadFile(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
+    UploadFile(DefaultIO *dio, string name, DataClass *dataClass): Command(dio){
         this->name = name;
         this->dataClass = dataClass;
     }
@@ -88,33 +83,33 @@ public:
         //initializing the number(will be n) indicating number of lines minus the headline
         this->dataClass->numberOfLines = someVector->size() - 1;
         //print message
-        this->dio->write("Upload complete.");
+        this->dio->write("Upload complete.\r\n");
     }
 
 //convert the vector of string to a real file
     void saveFile(vector <string> *someFile, string nameOfFile) {
         //enter name of the file and make file
         std::ofstream outFile(nameOfFile);
-        for (const auto &e : *someFile) outFile << e << "\n";
+        for (const auto &e : *someFile) outFile << e << "\r\n";
     }
 
 //the main function, calling the help function to uplaod and save the file
     void execute() {
         vector <string> trainFile;
         vector <string> testFile;
-        this->dio->write("Please upload your local train CSV file.");
+        this->dio->write("Please upload your local train CSV file.\r\n");
         uploading(&trainFile);
-        saveFile(&trainFile, "anomalyTest.csv");
-        this->dio->write("Please upload your local test CSV file.");
+        saveFile(&trainFile, "anomalyTrain.csv");
+        this->dio->write("Please upload your local test CSV file.\r\n");
         uploading(&testFile);
-        saveFile(&testFile, "anomalyTrain.csv");
+        saveFile(&testFile, "anomalyTest.csv");
     }
 };
 
 //another class 2-choose correaltion for the algorithm
 class Correlation : public Command {
 public:
-    Correlation(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
+    Correlation(DefaultIO *dio, string name, DataClass *dataClass) : Command(dio) {
         this->name = name;
         this->dataClass = dataClass;
     }
@@ -123,27 +118,27 @@ public:
         return this->name;
     }
 
-//the main function
+    //the main function
     void execute() {
         //default correlation
         float updatedCorrelation = 0;
-        this->dio->write("The current correlation threshold is 0.9\n");
+        this->dio->write("The current correlation threshold is 0.9\r\n");
+        this->dio->write("Type a new threshold\r\n");
+
         this->dio->read(&updatedCorrelation);
         while ((updatedCorrelation < 0) || (updatedCorrelation > 1)) {
-            this->dio->write("please choose a value between 0 and 1.\n");
+            this->dio->write("please choose a value between 0 and 1.\r\n");
             this->dio->read(&updatedCorrelation);
         }
         //saving the correlation
         this->dataClass->updatedCorrelation = updatedCorrelation;
-
     }
 };
 
 //another class 3-the hybrid anomaly detection algorithm,here we run and detect abnormaly
 class AnomalyAlgo : public Command {
 public:
-    AnomalyAlgo(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
-
+    AnomalyAlgo(DefaultIO *dio, string name, DataClass *dataClass): Command(dio) {
         this->name = name;
         this->dataClass = dataClass;
     }
@@ -158,21 +153,21 @@ public:
         HybridAnomalyDetector hybridAnomalyDetection(defaultCorrelation);
         //check if we have updat correalion from the user
         if (this->dataClass->updatedCorrelation != 0) {
-             hybridAnomalyDetection.setCorllation(dataClass->updatedCorrelation);
+            hybridAnomalyDetection.setCorllation(dataClass->updatedCorrelation);
         }
         //convert the file to timeseries and stariong the algo
-        hybridAnomalyDetection.learnNormal(TimeSeries("anomalyTrain"));
+        hybridAnomalyDetection.learnNormal(TimeSeries("anomalyTrain.csv"));
         //continue the algo and save the vector with the results to the new class
-        this->dataClass->anomalReportVector = hybridAnomalyDetection.detect(TimeSeries("anomalyTest"));
+        this->dataClass->anomalReportVector = hybridAnomalyDetection.detect(TimeSeries("anomalyTest.csv"));
         //message printed
-        this->dio->write("complete detection anomaly.\n");
+        this->dio->write("anomaly detection complete.\r\n");
     }
 };
 
 //another class 4-print the results to the user
 class PrintAnomalyReport : public Command {
 public:
-    PrintAnomalyReport(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
+    PrintAnomalyReport(DefaultIO *dio, string name, DataClass *dataClass): Command(dio) {
         this->name = name;
         this->dataClass = dataClass;
     }
@@ -187,18 +182,18 @@ public:
             this->dio->write(this->dataClass->anomalReportVector[i].timeStep);
             this->dio->write("  ");
             this->dio->write(this->dataClass->anomalReportVector[i].description);
-            this->dio->write("\n");
+            this->dio->write("\r\n");
         }
-        this->dio->write("Done.");
+        this->dio->write("Done.\r\n");
     }
 };
 
 //another class 5-compar my results vs the user file results and print the differnces/similarites
 class AnalysisAnomaly : public Command {
 public:
-    AnalysisAnomaly(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
+    AnalysisAnomaly(DefaultIO *dio, string name, DataClass *dataClass): Command(dio){
         this->name = name;
-        this->dataClass;
+        this->dataClass = dataClass;
     }
 
     string get() {
@@ -215,61 +210,63 @@ public:
         //each pair has a begin and end of time step of the report of the user file
         vector <pair<int, int>> fileOfTheClientConverted;
         //the vector with my results
-        vector <AnomalyReport> anomalyReport;
+        // vector<AnomalyReport> anomalyReport;
         //each pair has a begin and end of time step of the report my file
         vector <pair<int, int>> timeStep;
         //number of sequence (size of the vector 'fileOfTheClientConverted')
         int P;
         //number of true positive
-        int TP;
+        float TP = 0;
         //number of false positive
-        int FP;
+        float FP = 0;
         //number of lines of the file of the client
-        int n = this->dataClass->numberOfLines;
         int N = this->dataClass->numberOfLines;
         //message
-        this->dio->write("Please upload your local anomalies file.\n");
-        //creat instance of class uploadfile
-        UploadFile anomalyReportByTheClient(this->dio,this->name,this->dataClass);
-        //uploading the file of the user
-        anomalyReportByTheClient.uploading(&fileOfTheClient);
+        this->dio->write("Please upload your local anomalies file.\r\n");
+        string word = this->dio->read();
+        while (word != "done") {
+            fileOfTheClient.push_back(word);
+            word = this->dio->read();
+        }
+        //print message
+        this->dio->write("Upload complete.\r\n");
         //for convenience i copy the vector to ano)ther
-        anomalyReport = this->dataClass->anomalReportVector;
+        vector<AnomalyReport> anomalyReport = this->dataClass->anomalReportVector;
 
-//checking sequence of report and initilaize the vector to be pairs of int of time step
+        //checking sequence of report and initilaize the vector to be pairs of int of time step
         for (int i = 0; i < anomalyReport.size(); i++) {
-            int k = 0;
             timeStepBefore = anomalyReport[i].timeStep;
             timeStepAfter = anomalyReport[i].timeStep;
             //need to fix the i so we wont miss element
-            while (i < anomalyReport.size() && anomalyReport[i].description == anomalyReport[i + 1].description &&
-                    anomalyReport[i].timeStep == anomalyReport[i + 1].timeStep - 1) {
+            while (i + 1 < anomalyReport.size() && anomalyReport[i].description == anomalyReport[i + 1].description &&
+                   anomalyReport[i].timeStep == anomalyReport[i + 1].timeStep - 1) {
                 timeStepAfter++;
                 i++;
             }
             timeStepAfter++;
             timeStep.push_back(std::make_pair(timeStepBefore, timeStepAfter));
-
         }
 
-//convert string to int and add t new vector of pair of int(range of anormaly)
+        //convert string to int and add t new vector of pair of int(range of anormaly)
         for (int i = 0; i < fileOfTheClient.size(); i++) {
             fileOfTheClientConverted.push_back(std::make_pair(stoi(fileOfTheClient[i].substr(0, fileOfTheClient[i].find(','))),
                                                               stoi(fileOfTheClient[i].substr(fileOfTheClient[i].find(',') + 1))));
         }
-//check the algorithm with the file of the client
-        for (auto it = timeStep.begin(); it != timeStep.end(); it++){
+        //check the algorithm with the file of the client
+        for (int j = 0; j < timeStep.size(); j++) {
             bool indicator = false;
             for (int i = 0; i < fileOfTheClientConverted.size(); i++) {
-
-                if (timeStep[i].first >= fileOfTheClientConverted[i].first)
-                    if (timeStep[i].second <= fileOfTheClientConverted[i].second) {
-                        indicator = true;
-                    }
-                if (timeStep[i].first <= fileOfTheClientConverted[i].first)
-                    if (timeStep[i].second >= fileOfTheClientConverted[i].second) {
-                        indicator = true;
-                    }
+                if(timeStep[j].first> fileOfTheClientConverted[i].second &&
+                timeStep[j].second > fileOfTheClientConverted[i].second){
+                    continue;
+                }
+                else if(fileOfTheClientConverted[i].first > timeStep[j].second &&
+                fileOfTheClientConverted[i].first > timeStep[j].first){
+                    continue;
+                }
+                else{
+                   indicator = true;
+                }
             }
             if (indicator == false)
                 FP++;
@@ -278,20 +275,23 @@ public:
             }
         }
         P = fileOfTheClient.size();
-//claculating N, iterat over the vector of the client and decrease from N all he timestep with report
-        for (vector <pair<int,int>>::const_iterator it = fileOfTheClientConverted.begin(); it != fileOfTheClientConverted.end(); it++){
-            //minusing from N all the range with report
+        //claculating N, iterat over the vector of the client and decrease from N all he timestep with report
+        for (vector <pair<int,int>>::const_iterator it = fileOfTheClientConverted.begin();
+        it != fileOfTheClientConverted.end(); it++){
+            //min using from N all the range with report
             N = N - (it->second - it->first);
         }
-//message
-        this->dio->write("Upload complete.\n");
         //print message with results
-        double result1 = TP / P;
-        double result2 = FP / N;
-        floorf(result1 * 1000) / 1000;
-        floorf(result2 * 1000) / 1000;
-        this->dio->write("True Positive Rate: " + to_string(result1) + "\n");
-        this->dio->write("False Positive Rate: " + to_string(result2));
+        float result1 = TP / P;
+        float result2 = FP / N;
+        result1 = floorf(result1 * 1000) / 1000;
+        result2 = floorf(result2 * 1000) / 1000;
+        this->dio->write("True Positive Rate: ");
+        this->dio->write(result1);
+        this->dio->write( "\r\n");
+        this->dio->write("False Positive Rate: ");
+        this->dio->write(result2);
+        this->dio->write( "\r\n");
     }
 };
 
