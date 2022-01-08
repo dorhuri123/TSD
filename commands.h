@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <fstream>
+#include <utility>
 #include <vector>
 #include "HybridAnomalyDetector.h"
 
@@ -14,14 +15,21 @@
 using namespace std;
 //data class- it's a shared class between all the other class in order to share data,
 // the class it's in a field of any other class
-class DataClass {
+struct DataClass {
 public:
-    //the results of the algorithem
+
+    DataClass(vector<struct AnomalyReport> vector1, float d, float d1) {
+        this->anomalReportVector = std::move(vector1);
+        this->updatedCorrelation = d;
+        this->numberOfLines = d1;
+    }
+
+//the results of the algorithem
     vector<AnomalyReport> anomalReportVector;
     //the correlation
     float updatedCorrelation = 0.9;
     float numberOfLines;
-};
+    };
 
 class DefaultIO {
 public:
@@ -45,9 +53,9 @@ public:
 class Command {
 protected:
     DefaultIO *dio;
-    DataClass *dataClass;
     string name;
 public:
+    //DataClass *dataClass;
     Command(DefaultIO *dio) : dio(dio) {}
 
     Command() {}
@@ -62,9 +70,10 @@ public:
 // implement here your command classes
 //class 1- uploading and save the file of the user
 class UploadFile : public Command {
-
+    DataClass *dataClass;
 public:
     UploadFile(DefaultIO *dio, string name, DataClass *dataClass): Command(dio){
+        this->dio = dio;
         this->name = name;
         this->dataClass = dataClass;
     }
@@ -108,8 +117,10 @@ public:
 
 //another class 2-choose correaltion for the algorithm
 class Correlation : public Command {
+    DataClass *dataClass;
 public:
     Correlation(DefaultIO *dio, string name, DataClass *dataClass) : Command(dio) {
+        this->dio = dio;
         this->name = name;
         this->dataClass = dataClass;
     }
@@ -138,8 +149,10 @@ public:
 
 //another class 3-the hybrid anomaly detection algorithm,here we run and detect abnormaly
 class AnomalyAlgo : public Command {
+    DataClass *dataClass;
 public:
     AnomalyAlgo(DefaultIO *dio, string name, DataClass *dataClass): Command(dio) {
+        this->dio = dio;
         this->name = name;
         this->dataClass = dataClass;
     }
@@ -152,10 +165,12 @@ public:
     void execute() override{
         float defaultCorrelation = 0.9;
         HybridAnomalyDetector hybridAnomalyDetection(defaultCorrelation);
+        /*
         //check if we have updat correalion from the user
         if (this->dataClass->updatedCorrelation != 0.9) {
             hybridAnomalyDetection.setCorllation(dataClass->updatedCorrelation);
         }
+         */
         //convert the file to timeseries and stariong the algo
         hybridAnomalyDetection.learnNormal(TimeSeries("anomalyTrain.csv"));
         //continue the algo and save the vector with the results to the new class
@@ -167,8 +182,10 @@ public:
 
 //another class 4-print the results to the user
 class PrintAnomalyReport : public Command {
+    DataClass *dataClass;
 public:
     PrintAnomalyReport(DefaultIO *dio, string name, DataClass *dataClass): Command(dio) {
+        this->dio = dio;
         this->name = name;
         this->dataClass = dataClass;
     }
@@ -191,29 +208,31 @@ public:
 
 //another class 5-compar my results vs the user file results and print the differnces/similarites
 class AnalysisAnomaly : public Command {
+    DataClass *dataClass;
 public:
-    AnalysisAnomaly(DefaultIO *dio, string name, DataClass *dataClass): Command(dio){
+    AnalysisAnomaly(DefaultIO *dio, string name, DataClass *dataClass) : Command(dio) {
+        this->dio = dio;
         this->name = name;
         this->dataClass = dataClass;
     }
 
-    string get() override{
+    string get() override {
         return this->name;
     }
 
 //the main function
-    void execute() override{
-        vector <string> fileOfTheClient;
+    void execute() override {
+        vector<string> fileOfTheClient;
         //the begining of the time report sequence
         long timeStepBefore;
         //the ending of the time report sequence
         long timeStepAfter;
         //each pair has a begin and end of time step of the report of the user file
-        vector <pair<int, int>> fileOfTheClientConverted;
+        vector<pair<int, int>> fileOfTheClientConverted;
         //the vector with my results
         // vector<AnomalyReport> anomalyReport;
         //each pair has a begin and end of time step of the report my file
-        vector <pair<int, int>> timeStep;
+        vector<pair<int, int>> timeStep;
         //number of sequence (size of the vector 'fileOfTheClientConverted')
         float P;
         //number of true positive
@@ -250,23 +269,22 @@ public:
 
         //convert string to int and add t new vector of pair of int(range of anormaly)
         for (int i = 0; i < fileOfTheClient.size(); i++) {
-            fileOfTheClientConverted.push_back(std::make_pair(stoi(fileOfTheClient[i].substr(0, fileOfTheClient[i].find(','))),
-                                                              stoi(fileOfTheClient[i].substr(fileOfTheClient[i].find(',') + 1))));
+            fileOfTheClientConverted.push_back(
+                    std::make_pair(stoi(fileOfTheClient[i].substr(0, fileOfTheClient[i].find(','))),
+                                   stoi(fileOfTheClient[i].substr(fileOfTheClient[i].find(',') + 1))));
         }
         //check the algorithm with the file of the client
         for (int j = 0; j < timeStep.size(); j++) {
             bool indicator = false;
             for (int i = 0; i < fileOfTheClientConverted.size(); i++) {
-                if(timeStep[j].first> fileOfTheClientConverted[i].second &&
-                timeStep[j].second > fileOfTheClientConverted[i].second){
+                if (timeStep[j].first > fileOfTheClientConverted[i].second &&
+                    timeStep[j].second > fileOfTheClientConverted[i].second) {
                     continue;
-                }
-                else if(fileOfTheClientConverted[i].first > timeStep[j].second &&
-                fileOfTheClientConverted[i].first > timeStep[j].first){
+                } else if (fileOfTheClientConverted[i].first > timeStep[j].second &&
+                           fileOfTheClientConverted[i].first > timeStep[j].first) {
                     continue;
-                }
-                else{
-                   indicator = true;
+                } else {
+                    indicator = true;
                 }
             }
             if (indicator == false)
@@ -275,27 +293,37 @@ public:
                 TP++;
             }
         }
-        P = (float)fileOfTheClient.size();
+        P = (float) fileOfTheClient.size();
         //claculating N, iterat over the vector of the client and decrease from N all he timestep with report
-        for (vector <pair<int,int>>::const_iterator it = fileOfTheClientConverted.begin();
-        it != fileOfTheClientConverted.end(); it++){
+        for (vector<pair<int, int>>::const_iterator it = fileOfTheClientConverted.begin();
+             it != fileOfTheClientConverted.end(); it++) {
             //min using from N all the range with report
-            N = N - (float)(it->second - it->first);
+            N = N - (float) (it->second - it->first);
         }
+        stringstream TPStream, FPStream;
         //print message with results
-        float result1 = TP / P;
-        float result2 = FP / N;
-        result1 = floorf(result1 * 1000.0) / 1000.0f;
-        result2 = floorf(result2 * 1000.0) / 1000.0f;
+        float result1 = ((int)(1000.0*TP/P)) / 1000.0f;
+        float result2 = ((int)(1000*FP/N)) / 1000.0f;
         this->dio->write("True Positive Rate: ");
         this->dio->write(result1);
-        this->dio->write( "\n");
+        this->dio->write("\n");
         this->dio->write("False Positive Rate: ");
         this->dio->write(result2);
-        this->dio->write( "\n");
+        this->dio->write("\n");
     }
 };
+class ExitCommand : public Command {
+    DataClass *dataClass;
+public:
+    ExitCommand(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
+        this->dio = dio;
+        this->name = name;
+        this->dataClass = dataClass;
+    }
+    string get() override{
+        return this->name;
+    }
 
-
-
+     void execute() override {}
+};
 #endif /* COMMANDS_H_ */

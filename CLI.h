@@ -10,6 +10,8 @@ using namespace std;
 
 class CLI {
     DefaultIO* dio;
+    Command* commands[6];
+    DataClass* dataClass;
     // you can add data members
 public:
     CLI(DefaultIO* dio);
