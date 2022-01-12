@@ -27,7 +27,7 @@ void HybridAnomalyDetector::learnHelper(const TimeSeries& ts,float p/*pearson*/,
         c.feature1=f1;
         c.feature2=f2;
         c.corrlation=p;
-        c.threshold=cl.radius*1.1; // 10% increase
+        c.threshold=cl.radius*1.1;
         c.cx=cl.center.x;
         c.cy=cl.center.y;
         cf.push_back(c);

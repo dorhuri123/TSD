@@ -1,329 +1,229 @@
-
-
 #ifndef COMMANDS_H_
 #define COMMANDS_H_
-
-#include<iostream>
 #include <string.h>
-
 #include <fstream>
-#include <utility>
 #include <vector>
+#include <memory>
+#include <sstream>
 #include "HybridAnomalyDetector.h"
 
-
 using namespace std;
-//data class- it's a shared class between all the other class in order to share data,
-// the class it's in a field of any other class
-struct DataClass {
+
+class DefaultIO{
 public:
-
-    DataClass(vector<struct AnomalyReport> vector1, float d, float d1) {
-        this->anomalReportVector = std::move(vector1);
-        this->updatedCorrelation = d;
-        this->numberOfLines = d1;
-    }
-
-//the results of the algorithem
-    vector<AnomalyReport> anomalReportVector;
-    //the correlation
-    float updatedCorrelation = 0.9;
-    float numberOfLines;
-    };
-
-class DefaultIO {
-public:
-    virtual string read() = 0;
-
-    virtual void write(string text) = 0;
-
-    virtual void write(float f) = 0;
-
-    virtual void read(float *f) = 0;
-
-    virtual ~DefaultIO() {}
-
-    // you may add additional methods here
+    virtual string read()=0;
+    virtual void write(string text)=0;
+    virtual void write(float f)=0;
+    virtual void read(float* f)=0;
+    virtual ~DefaultIO(){};
 };
 
-// you may add here helper classes
+struct DataClass{
+public:
+    HybridAnomalyDetector hd;
+    float desiredThreshHold;
+    vector<AnomalyReport> ar;
+};
+
 
 
 // you may edit this class
 class Command {
 protected:
-    DefaultIO *dio;
-    string name;
+    DefaultIO* dio;
 public:
-    //DataClass *dataClass;
-    Command(DefaultIO *dio) : dio(dio) {}
-
-    Command() {}
-
-    virtual string get() = 0;
-
-    virtual void execute() = 0;
-
-    virtual ~Command() {}
+    string text;
+    Command(DefaultIO* dio):dio(dio){}
+    virtual void execute()=0;
+    virtual ~Command(){}
 };
 
-// implement here your command classes
-//class 1- uploading and save the file of the user
+
 class UploadFile : public Command {
-    DataClass *dataClass;
 public:
-    UploadFile(DefaultIO *dio, string name, DataClass *dataClass): Command(dio){
-        this->dio = dio;
-        this->name = name;
-        this->dataClass = dataClass;
+    UploadFile(DefaultIO* dio):Command(dio) {
+        this->text = "1.upload a time series csv file\n";
     }
-
-    string get() override{
-        return this->name;
-    }
-
-//reading the file and make it to a vector of string
-    void uploading(vector <string> *someVector) {
-        string word = this->dio->read();
-        while (word != "done") {
-            someVector->push_back(word);
-            word = this->dio->read();
-        }
-        //initializing the number(will be n) indicating number of lines minus the headline
-        this->dataClass->numberOfLines = someVector->size() - 1;
-        //print message
-        this->dio->write("Upload complete.\n");
-    }
-
-//convert the vector of string to a real file
-    void saveFile(vector <string> *someFile, string nameOfFile) {
-        //enter name of the file and make file
-        std::ofstream outFile(nameOfFile);
-        for (const auto &e : *someFile) outFile << e << "\n";
-    }
-
-//the main function, calling the help function to uplaod and save the file
-    void execute() override{
-        vector <string> trainFile;
-        vector <string> testFile;
-        this->dio->write("Please upload your local train CSV file.\n");
-        uploading(&trainFile);
-        saveFile(&trainFile, "anomalyTrain.csv");
-        this->dio->write("Please upload your local test CSV file.\n");
-        uploading(&testFile);
-        saveFile(&testFile, "anomalyTest.csv");
-    }
-};
-
-//another class 2-choose correaltion for the algorithm
-class Correlation : public Command {
-    DataClass *dataClass;
-public:
-    Correlation(DefaultIO *dio, string name, DataClass *dataClass) : Command(dio) {
-        this->dio = dio;
-        this->name = name;
-        this->dataClass = dataClass;
-    }
-
-    string get() override{
-        return this->name;
-    }
-
-    //the main function
-    void execute() override{
-        //default correlation
-        float updatedCorrelation = 0.9;
-        this->dio->write("The current correlation threshold is ");
-        this->dio->write(this->dataClass->updatedCorrelation);
-        this->dio->write("\nType a new threshold\n");
-
-        this->dio->read(&updatedCorrelation);
-        while ((updatedCorrelation < 0) || (updatedCorrelation > 1)) {
-            this->dio->write("please choose a value between 0 and 1.\n");
-            this->dio->read(&updatedCorrelation);
-        }
-        //saving the correlation
-        this->dataClass->updatedCorrelation = updatedCorrelation;
-    }
-};
-
-//another class 3-the hybrid anomaly detection algorithm,here we run and detect abnormaly
-class AnomalyAlgo : public Command {
-    DataClass *dataClass;
-public:
-    AnomalyAlgo(DefaultIO *dio, string name, DataClass *dataClass): Command(dio) {
-        this->dio = dio;
-        this->name = name;
-        this->dataClass = dataClass;
-    }
-
-    string get() override{
-        return this->name;
-    }
-
-//the main function
-    void execute() override{
-        float defaultCorrelation = 0.9;
-        HybridAnomalyDetector hybridAnomalyDetection(defaultCorrelation);
-        /*
-        //check if we have updat correalion from the user
-        if (this->dataClass->updatedCorrelation != 0.9) {
-            hybridAnomalyDetection.setCorllation(dataClass->updatedCorrelation);
-        }
-         */
-        //convert the file to timeseries and stariong the algo
-        hybridAnomalyDetection.learnNormal(TimeSeries("anomalyTrain.csv"));
-        //continue the algo and save the vector with the results to the new class
-        this->dataClass->anomalReportVector = hybridAnomalyDetection.detect(TimeSeries("anomalyTest.csv"));
-        //message printed
-        this->dio->write("anomaly detection complete.\n");
-    }
-};
-
-//another class 4-print the results to the user
-class PrintAnomalyReport : public Command {
-    DataClass *dataClass;
-public:
-    PrintAnomalyReport(DefaultIO *dio, string name, DataClass *dataClass): Command(dio) {
-        this->dio = dio;
-        this->name = name;
-        this->dataClass = dataClass;
-    }
-
-    string get() override{
-        return this->name;
-    }
-
-    void execute() override{
-        //print from dataclass
-        for (int i = 0; i < this->dataClass->anomalReportVector.size(); i++) {
-            this->dio->write(this->dataClass->anomalReportVector[i].timeStep);
-            this->dio->write("\t");
-            this->dio->write(this->dataClass->anomalReportVector[i].description);
-            this->dio->write("\n");
-        }
-        this->dio->write("Done.\n");
-    }
-};
-
-//another class 5-compar my results vs the user file results and print the differnces/similarites
-class AnalysisAnomaly : public Command {
-    DataClass *dataClass;
-public:
-    AnalysisAnomaly(DefaultIO *dio, string name, DataClass *dataClass) : Command(dio) {
-        this->dio = dio;
-        this->name = name;
-        this->dataClass = dataClass;
-    }
-
-    string get() override {
-        return this->name;
-    }
-
-//the main function
     void execute() override {
-        vector<string> fileOfTheClient;
-        //the begining of the time report sequence
-        long timeStepBefore;
-        //the ending of the time report sequence
-        long timeStepAfter;
-        //each pair has a begin and end of time step of the report of the user file
-        vector<pair<int, int>> fileOfTheClientConverted;
-        //the vector with my results
-        // vector<AnomalyReport> anomalyReport;
-        //each pair has a begin and end of time step of the report my file
-        vector<pair<int, int>> timeStep;
-        //number of sequence (size of the vector 'fileOfTheClientConverted')
-        float P;
-        //number of true positive
-        float TP = 0;
-        //number of false positive
-        float FP = 0;
-        //number of lines of the file of the client
-        float N = this->dataClass->numberOfLines;
-        //message
-        this->dio->write("Please upload your local anomalies file.\n");
-        string word = this->dio->read();
-        while (word != "done") {
-            fileOfTheClient.push_back(word);
-            word = this->dio->read();
+        ofstream trainAnomaly, testAnomaly;
+        testAnomaly.open("anomalyTest.csv");
+        trainAnomaly.open("anomalyTrain.csv");
+        dio->write("Please upload your local train CSV file.\n");
+        string input = dio->read();
+        // while the read line is not "done"
+        while(input != "done") {
+            trainAnomaly << input << endl;
+            input = dio->read();
         }
-        //print message
-        this->dio->write("Upload complete.\n");
-        //for convenience i copy the vector to ano)ther
-        vector<AnomalyReport> anomalyReport = this->dataClass->anomalReportVector;
+        dio->write("Upload complete.\n");
+        dio->write("Please upload your local test CSV file.\n");
+        input = dio->read();
+        // while the read line is not "done"
+        while(input != "done") {
+            testAnomaly << input << endl;
+            input = dio->read();
+        }
+        dio->write("Upload complete.\n");
+        trainAnomaly.close();
+        testAnomaly.close();
+    }
+};
 
-        //checking sequence of report and initilaize the vector to be pairs of int of time step
-        for (int i = 0; i < anomalyReport.size(); i++) {
-            timeStepBefore = anomalyReport[i].timeStep;
-            timeStepAfter = anomalyReport[i].timeStep;
-            //need to fix the i so we wont miss element
-            while (i + 1 < anomalyReport.size() && anomalyReport[i].description == anomalyReport[i + 1].description &&
-                   anomalyReport[i].timeStep == anomalyReport[i + 1].timeStep - 1) {
-                timeStepAfter++;
-                i++;
-            }
-            timeStepAfter++;
-            timeStep.push_back(std::make_pair(timeStepBefore, timeStepAfter));
+class Correlation : public Command {
+    DataClass* dataClass;
+public:
+    Correlation(DefaultIO* dio, DataClass* dataClass): Command(dio) {
+        this->text = "2.algorithm settings\n";
+        this->dataClass = dataClass;
+    }
+    void execute() override {
+        dio->write("The current correlation threshold is " + to_string(dataClass->desiredThreshHold) + "\n");
+        dio->write("Type a new threshold\n");
+        float newThreshold;
+        newThreshold = stof(dio->read());
+        while(newThreshold <= 0 || newThreshold > 1) {
+            dio->write("please choose a value between 0 and 1.\n");
+            newThreshold = stof(dio->read());
         }
+        dataClass->desiredThreshHold = newThreshold;
+        dataClass->hd.setCorllation(newThreshold);
+    }
+};
+class AnomalyAlgo : public Command{
+    DataClass *dataClass;
+    const char* trainCSV = "anomalyTrain.csv";
+    const char* testCSV = "anomalyTest.csv";
+    const char* detectionCompleteMSG = "anomaly detection complete.\n";
+public:
+    AnomalyAlgo(DefaultIO* dio, DataClass *dataClass): Command(dio), dataClass(dataClass){
+        this->text = "3.detect anomalies\n";
+    }
+    void execute() override{
+        TimeSeries testTimeSeries(testCSV);
+        TimeSeries trainTimeSeries(trainCSV);
 
-        //convert string to int and add t new vector of pair of int(range of anormaly)
-        for (int i = 0; i < fileOfTheClient.size(); i++) {
-            fileOfTheClientConverted.push_back(
-                    std::make_pair(stoi(fileOfTheClient[i].substr(0, fileOfTheClient[i].find(','))),
-                                   stoi(fileOfTheClient[i].substr(fileOfTheClient[i].find(',') + 1))));
+        dataClass->hd.learnNormal(trainTimeSeries);
+        dataClass->ar = dataClass->hd.detect(testTimeSeries);
+        dio->write(detectionCompleteMSG);
+    }
+};
+
+class PrintAnomalyReport : public Command{
+    DataClass *sc;
+public:
+    PrintAnomalyReport(DefaultIO* dio, DataClass *sc): Command(dio), sc(sc){
+        this->text = "4.display results\n";
+    }
+    void execute() override{
+        string textStr, done = "done\n";
+        for (const auto& report : sc->ar){
+            textStr.append((to_string(report.timeStep) + "\t" + report.description + "\n"));
         }
-        //check the algorithm with the file of the client
-        for (int j = 0; j < timeStep.size(); j++) {
-            bool indicator = false;
-            for (int i = 0; i < fileOfTheClientConverted.size(); i++) {
-                if (timeStep[j].first > fileOfTheClientConverted[i].second &&
-                    timeStep[j].second > fileOfTheClientConverted[i].second) {
-                    continue;
-                } else if (fileOfTheClientConverted[i].first > timeStep[j].second &&
-                           fileOfTheClientConverted[i].first > timeStep[j].first) {
-                    continue;
-                } else {
-                    indicator = true;
+        textStr.append(done);
+        dio->write(textStr);
+    }
+};
+
+class AnalysisAnomaly : public Command{
+    string truePositiveComment = "True Positive Rate: ";
+    string falsePositiveComment = "False Positive Rate: ";
+    string uploadComment = "Please upload your local anomalies file.\n";
+    string uploadComplete = "Upload complete.\n";
+    DataClass *dataClass;
+public:
+    AnalysisAnomaly(DefaultIO* dio, DataClass *dataClass): Command(dio), dataClass(dataClass){
+        this->text = "5.upload anomalies and analyze results\n";
+    }
+
+    void execute() override{
+        int P = 0, s, t, FP = 0, TP = 0, startTime, endTime;
+        bool ok;
+        int  N = TimeSeries("anomalyTest.csv").getData().begin()->second.size();
+        float TPrate, FPrate;
+        stringstream TPStream, FPStream;
+        auto reportVec = report_Vector();
+        auto anomalyVec = anomaly_Vector(P, N);
+        dio->write(uploadComplete);
+
+        for(const auto& exception_report : reportVec) {
+            ok = false;
+            startTime = exception_report.first;
+            endTime = exception_report.second;
+            for(const auto& report : anomalyVec){
+                s = report.first;
+                t = report.second;
+                if ((startTime <= s && endTime >= s) || (startTime >= s && startTime <= t)){
+                    TP++;
+                    ok = true;
                 }
             }
-            if (indicator == false)
+            if (!ok)
                 FP++;
-            else {
-                TP++;
-            }
         }
-        P = (float) fileOfTheClient.size();
-        //claculating N, iterat over the vector of the client and decrease from N all he timestep with report
-        for (vector<pair<int, int>>::const_iterator it = fileOfTheClientConverted.begin();
-             it != fileOfTheClientConverted.end(); it++) {
-            //min using from N all the range with report
-            N = N - (float) (it->second - it->first);
-        }
-        stringstream TPStream, FPStream;
-        //print message with results
-        float result1 = ((int)(1000.0*TP/P)) / 1000.0f;
-        float result2 = ((int)(1000*FP/N)) / 1000.0f;
-        this->dio->write("True Positive Rate: ");
-        this->dio->write(result1);
-        this->dio->write("\n");
-        this->dio->write("False Positive Rate: ");
-        this->dio->write(result2);
-        this->dio->write("\n");
-    }
-};
-class ExitCommand : public Command {
-    DataClass *dataClass;
-public:
-    ExitCommand(DefaultIO *dio, string name, DataClass *dataClass):Command(dio) {
-        this->dio = dio;
-        this->name = name;
-        this->dataClass = dataClass;
-    }
-    string get() override{
-        return this->name;
+
+        TPrate = (float) floor(TP * 1000 / P) / 1000;
+        FPrate = (float) floor(FP * 1000 / N) / 1000;
+        TPStream << TPrate;
+        FPStream << FPrate;
+
+        dio->write(truePositiveComment + TPStream.str() + "\n");
+        dio->write(falsePositiveComment + FPStream.str() + "\n");
     }
 
-     void execute() override {}
+    vector<pair<int,int>> report_Vector(){
+        int start, cT;
+        string currentText;
+        vector<pair<int,int>> reportVecor1;
+        start = dataClass->ar.begin()->timeStep;
+        cT = start;
+        currentText = dataClass->ar.begin()->description;
+        for(int i = 1; i < dataClass->ar.size() - 1; i++){
+            auto report = dataClass->ar[i];
+            if (report.description != currentText || report.timeStep != cT + 1 ){
+                currentText = report.description;
+                pair<int,int> tempPair(start,cT);
+                reportVecor1.push_back(tempPair);
+                start = report.timeStep;
+                cT = start;
+            }
+            else
+                cT = report.timeStep;
+        }
+
+        pair<int,int> tempPair(start,cT);
+        reportVecor1.push_back(tempPair);
+
+        return reportVecor1;
+    }
+
+
+    vector<pair<int, int>> anomaly_Vector(int &P, int &N) {
+        int split, start, end;
+        vector<pair<int,int>> anomalyVector1;
+        dio->write(uploadComment);
+        string s = dio->read();
+        // while the read line is not "done"
+        while(s != "done") {
+            split = s.find(',');
+            start = stoi(s.substr(0,split));
+            end = stoi(s.substr(split + 1));
+            pair<int,int> tempPair(start,end);
+            anomalyVector1.push_back(tempPair);
+            N = N - (end - start);
+            P++;
+            s = dio->read();
+        }
+        return anomalyVector1;
+    }
 };
+
+class ExitCommand : public Command{
+public:
+    ExitCommand(DefaultIO* dio) : Command(dio) {
+        this->text = "6.exit\n";
+    }
+    void execute() override {}
+};
+
+
 #endif /* COMMANDS_H_ */

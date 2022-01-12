@@ -67,6 +67,9 @@ public:
     size_t getRowSize()const{
         return dataRowSize;
     }
+    map<string, vector<float>> getData() const {
+        return ts;
+    }
 
     ~TimeSeries(){
 
